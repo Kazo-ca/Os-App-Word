@@ -186,7 +186,7 @@ deux fenêtres en même temps.
 | Chantier | Branche | Dépend de | État |
 | --- | --- | --- | --- |
 | Plan | `docs/word-plan` | rien | Fusionné (PR [#1](https://github.com/Kazo-ca/Os-App-Word/pull/1)) |
-| Vérification du plan | `docs/word-plan-verification` | plan | PR_VERIF_FR |
+| Vérification du plan | `docs/word-plan-verification` | plan | PR [#2](https://github.com/Kazo-ca/Os-App-Word/pull/2) |
 | Kazo OS : page d'iframe d'une app installée | à créer dans `Kazo-ca/Os` | question 10 | En attente de la réponse |
 | 1. Solution et iframe | `word/1-solution` | plan | En attente du feu vert de Benoit |
 | 2. Ouvrir et enregistrer | `word/2-open-save` | 1 | À faire |

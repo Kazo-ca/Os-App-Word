@@ -179,7 +179,7 @@ save it, reopen it; Save As; two windows at once.
 | Work item | Branch | Depends on | State |
 | --- | --- | --- | --- |
 | Plan | `docs/word-plan` | nothing | Merged (PR [#1](https://github.com/Kazo-ca/Os-App-Word/pull/1)) |
-| Check of the plan | `docs/word-plan-verification` | plan | PR_VERIF_EN |
+| Check of the plan | `docs/word-plan-verification` | plan | PR [#2](https://github.com/Kazo-ca/Os-App-Word/pull/2) |
 | Kazo OS: iframe page of an installed app | to create in `Kazo-ca/Os` | question 10 | Waiting for the answer |
 | 1. Solution and iframe | `word/1-solution` | plan | Waiting for Benoit's go |
 | 2. Open and save | `word/2-open-save` | 1 | To do |
