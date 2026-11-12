@@ -2,9 +2,8 @@
 
 # Plan : l'app Kazo Word pour Kazo OS
 
-Plan **en discussion** (fil « Intégrer WordCraft dans Kazo OS », 2026-11-11 et
-2026-11-12). Les décisions marquées « en attente » prennent la recommandation
-tant que Benoit n'a pas répondu. Ce document fixe le but, les décisions et
+Plan établi avec Benoit dans le fil « Intégrer WordCraft dans Kazo OS »
+(2026-11-11 et 2026-11-12). Ce document fixe le but, les décisions et
 l'ordre des choses à faire ; l'avancement est en fin de page.
 
 ## But
@@ -37,8 +36,8 @@ tests d'intégration.
 | 5 | Portée de la v1 | Ordinateur seulement, **plusieurs fenêtres** (un document par fenêtre). Benoit, 2026-11-12. |
 | 6 | Noms | « **Kazo Word** » (traitement de texte, WordCraft) et « **Kazo Sheet** » (tableur, GridCraft). Benoit, 2026-11-12. La fiche du Store dit « basé sur WordCraft de l'équipe ArtCraft », sans logo ArtCraft. |
 | 7 | Le mot « Word » | « Word » est une marque de Microsoft pour un traitement de texte. Benoit garde « Kazo Word » (réponse à la question 6, 2026-11-12). |
-| 8 | Bibliothèque partagée | *En attente.* Benoit veut une bibliothèque commune aux deux apps pour les dépendances communes. Recommandation : un projet séparé `Kazo.Craft.Host` dans ce dépôt (fenêtre C#, proxy, scripts de build), extrait dans son propre dépôt quand Kazo Sheet commence. |
-| 9 | Où vivent les sources amont | *En attente.* Recommandation : des forks `Kazo-ca/wordcraft`, `Kazo-ca/gridcraft` et `Kazo-ca/craft-libs` (les mêmes servent aux PR en amont), en sous-modules git, compilés par la CI. |
+| 8 | Bibliothèque partagée | Pour les **dépendances d'exécution communes** aux deux apps (elles partagent une base WebAssembly : egui, wgpu, `craft-libs`, polices, dictionnaires). **Décidé après les tests**, avant la création de Kazo Sheet (Benoit, 2026-11-12). À mesurer pendant les tests : deux modules wasm ne partagent pas de code Rust à l'exécution ; ce qui peut se partager, ce sont les données chargées à part (polices, dictionnaires, traductions) et notre côté C# et JavaScript. |
+| 9 | Où vivent les sources amont | Des **forks** `Kazo-ca/wordcraft`, `Kazo-ca/gridcraft` et `Kazo-ca/craft-libs` (Benoit, 2026-11-12), en sous-modules git, compilés par la CI ; les mêmes forks servent aux PR en amont. Benoit crée les forks avant le chantier 4. |
 
 ## L'intégration
 
@@ -159,10 +158,10 @@ deux fenêtres en même temps.
 
 | Chantier | Branche | Dépend de | État |
 | --- | --- | --- | --- |
-| Plan | `docs/word-plan` | réponses 8, 9 | En cours |
+| Plan | `docs/word-plan` | rien | PR [#1](https://github.com/Kazo-ca/Os-App-Word/pull/1) |
 | 1. Solution et iframe | `word/1-solution` | plan | À faire |
 | 2. Ouvrir et enregistrer | `word/2-open-save` | 1 | À faire |
 | 3. Proxy complet | `word/3-proxy` | 1 | À faire |
-| 4. Build depuis les sources | `word/4-build-from-source` | 1 | À faire |
+| 4. Build depuis les sources | `word/4-build-from-source` | 1, forks créés | À faire |
 | 5. Store | `word/5-store` | 2, 3, 4 | À faire |
 | Piste en amont | fork de `storytold/craft-libs` | rien | À faire |

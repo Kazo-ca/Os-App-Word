@@ -2,9 +2,8 @@
 
 # Plan: the Kazo Word app for Kazo OS
 
-Plan **under discussion** (thread "Intégrer WordCraft dans Kazo OS",
-2026-11-11 and 2026-11-12). Decisions marked "pending" take the recommendation
-until Benoit answers. This document sets the goal, the decisions and the order
+Plan set with Benoit in the thread "Intégrer WordCraft dans Kazo OS"
+(2026-11-11 and 2026-11-12). This document sets the goal, the decisions and the order
 of the work; progress is at the end of the page.
 
 ## Goal
@@ -36,8 +35,8 @@ integration tests.
 | 5 | Scope of v1 | Desktop only, **several windows** (one document per window). Benoit, 2026-11-12. |
 | 6 | Names | "**Kazo Word**" (word processor, WordCraft) and "**Kazo Sheet**" (spreadsheet, GridCraft). Benoit, 2026-11-12. The Store listing says "based on WordCraft by the ArtCraft team", with no ArtCraft logo. |
 | 7 | The word "Word" | "Word" is a Microsoft trademark for a word processor. Benoit keeps "Kazo Word" (answer to question 6, 2026-11-12). |
-| 8 | Shared library | *Pending.* Benoit wants a library shared by both apps for their common dependencies. Recommendation: a separate `Kazo.Craft.Host` project in this repository (C# window, proxy, build scripts), moved to its own repository when Kazo Sheet starts. |
-| 9 | Where the upstream sources live | *Pending.* Recommendation: forks `Kazo-ca/wordcraft`, `Kazo-ca/gridcraft` and `Kazo-ca/craft-libs` (the same ones serve the upstream PRs), as git submodules, built by CI. |
+| 8 | Shared library | For the **runtime dependencies common** to both apps (they share a WebAssembly base: egui, wgpu, `craft-libs`, fonts, dictionaries). **Decided after the tests**, before Kazo Sheet is created (Benoit, 2026-11-12). To measure during the tests: two wasm modules share no Rust code at run time; what can be shared is data loaded separately (fonts, dictionaries, translations) and our C# and JavaScript side. |
+| 9 | Where the upstream sources live | **Forks** `Kazo-ca/wordcraft`, `Kazo-ca/gridcraft` and `Kazo-ca/craft-libs` (Benoit, 2026-11-12), as git submodules, built by CI; the same forks serve the upstream PRs. Benoit creates the forks before work item 4. |
 
 ## The integration
 
@@ -155,10 +154,10 @@ save it, reopen it; Save As; two windows at once.
 
 | Work item | Branch | Depends on | State |
 | --- | --- | --- | --- |
-| Plan | `docs/word-plan` | answers 8, 9 | In progress |
+| Plan | `docs/word-plan` | nothing | PR [#1](https://github.com/Kazo-ca/Os-App-Word/pull/1) |
 | 1. Solution and iframe | `word/1-solution` | plan | To do |
 | 2. Open and save | `word/2-open-save` | 1 | To do |
 | 3. Full proxy | `word/3-proxy` | 1 | To do |
-| 4. Build from source | `word/4-build-from-source` | 1 | To do |
+| 4. Build from source | `word/4-build-from-source` | 1, forks created | To do |
 | 5. Store | `word/5-store` | 2, 3, 4 | To do |
 | Upstream track | fork of `storytold/craft-libs` | nothing | To do |
