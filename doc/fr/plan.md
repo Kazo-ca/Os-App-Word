@@ -20,7 +20,7 @@ l'enregistre dans les fichiers de l'utilisateur.
 Rien n'est réécrit : l'app Kazo OS **emballe le build web de WordCraft** et
 branche son mode « hébergé » (`craft-web-host`) sur le système de fichiers, les
 dialogues et les associations de fichiers de Kazo OS. C'est la première app
-d'une suite bureautique ; GridCraft (tableur) suivra avec la même méthode.
+d'une suite bureautique ; Kazo Sheet (tableur, GridCraft) suivra avec la même méthode.
 
 WordCraft est en **alpha** (environ 60 % prêt pour le vrai travail selon ses
 auteurs, version 0.18 le 2026-11-11). Les premiers chantiers servent aussi de
@@ -31,12 +31,14 @@ tests d'intégration.
 | # | Sujet | Décision |
 | --- | --- | --- |
 | 1 | Intégration | Une **iframe** par fenêtre, sur une page de l'app (`wwwroot/`), avec un **proxy** JavaScript dans cette page. WordCraft y tourne en mode `data-host="page"` et ne parle qu'au proxy ; le proxy relaie vers la fenêtre Kazo par `postMessage`. Décidé le 2026-11-11. |
-| 2 | Provenance du build web | *En attente.* Recommandation : le zip officiel `wordcraft-web-<version>.zip` de la release amont, **sans modification**, épinglé par version et SHA-256. Pas de Rust dans la CI, et un build intact évite la contrainte de la marque ArtCraft (une version modifiée doit retirer le nom et le logo ArtCraft). |
-| 3 | Dépôts | Un dépôt par app : `Kazo-ca/Os-App-Word` (créé le 2026-11-12 depuis Os-AppTemplate), plus tard un dépôt pour GridCraft. Le proxy est copié ; il devient un paquet partagé si une troisième app Craft arrive. |
+| 2 | Provenance du build web | **Compilé depuis les sources** (Benoit, 2026-11-12) : on aura besoin de modifications et d'avoir le code à portée de main. **Pour les premiers tests**, le zip officiel `wordcraft-web-<version>.zip` de la release amont, épinglé par version et SHA-256. Un build modifié doit retirer le nom et le logo ArtCraft (licence de marque). Voir aussi la bibliothèque partagée (décision 8). |
+| 3 | Dépôts | Un dépôt par app : `Kazo-ca/Os-App-Word` (créé le 2026-11-12 depuis Os-AppTemplate, les premiers tests s'y font), plus tard un dépôt pour Kazo Sheet. Benoit, 2026-11-12. |
 | 4 | Fichier › Ouvrir de WordCraft | Le proxy intercepte le sélecteur de fichiers du navigateur et ouvre le dialogue de Kazo OS à la place, comme `FilePromptInterceptor` de Webamp. En parallèle, un message `open-request` est proposé en amont (voir « Piste en amont »). Décidé le 2026-11-11. |
-| 5 | Portée de la v1 | *En attente.* Recommandation : ordinateur seulement, **plusieurs fenêtres** (un document par fenêtre). |
-| 6 | Nom | Un nom Kazo, « Kazo Word » (Benoit, 2026-11-12). La fiche du Store dit « basé sur WordCraft de l'équipe ArtCraft », sans logo ArtCraft. |
-| 7 | Le mot « Word » | *En attente.* « Word » est une marque de Microsoft pour un traitement de texte. Recommandation : garder le dépôt `Os-App-Word`, mais choisir un autre nom affiché avant la publication au Store. |
+| 5 | Portée de la v1 | Ordinateur seulement, **plusieurs fenêtres** (un document par fenêtre). Benoit, 2026-11-12. |
+| 6 | Noms | « **Kazo Word** » (traitement de texte, WordCraft) et « **Kazo Sheet** » (tableur, GridCraft). Benoit, 2026-11-12. La fiche du Store dit « basé sur WordCraft de l'équipe ArtCraft », sans logo ArtCraft. |
+| 7 | Le mot « Word » | « Word » est une marque de Microsoft pour un traitement de texte. Benoit garde « Kazo Word » (réponse à la question 6, 2026-11-12). |
+| 8 | Bibliothèque partagée | *En attente.* Benoit veut une bibliothèque commune aux deux apps pour les dépendances communes. Recommandation : un projet séparé `Kazo.Craft.Host` dans ce dépôt (fenêtre C#, proxy, scripts de build), extrait dans son propre dépôt quand Kazo Sheet commence. |
+| 9 | Où vivent les sources amont | *En attente.* Recommandation : des forks `Kazo-ca/wordcraft`, `Kazo-ca/gridcraft` et `Kazo-ca/craft-libs` (les mêmes servent aux PR en amont), en sous-modules git, compilés par la CI. |
 
 ## L'intégration
 
@@ -78,7 +80,7 @@ Fenêtre Kazo OS (Blazor, C#)  ⇄  proxy (page de l'iframe)  ⇄  WordCraft (.w
   installée sont servis à `_content/<assembly>/` et `.wasm` part en
   `application/wasm`. Un paquet accepte 64 Mio compressés et 128 Mio
   décompressés : si le build web les dépasse, il faudra une ADR dans Kazo OS
-  avant le chantier 4.
+  avant le chantier 5.
 
 ## Chantiers
 
@@ -96,11 +98,12 @@ Série `word/base` (créée depuis `main` quand le plan est validé), une branch
 3. **Proxy complet** (`word/3-proxy`) : raccourcis de l'OS, interception du
    sélecteur de fichiers, auteur, mode sombre et langue de l'OS si WordCraft
    l'accepte par ses commandes, menu de la fenêtre.
-4. **Store** (`word/4-store`) : icône, fiche, `THIRD-PARTY-NOTICES.md` (NOTICE
+4. **Build depuis les sources** (`word/4-build-from-source`) : sous-module du fork de WordCraft, compilation `wasm32` par Trunk dans la CI, même résultat que le zip ; retrait des marques ArtCraft dès qu'une modification est faite ; bibliothèque partagée (décisions 8 et 9).
+5. **Store** (`word/5-store`) : icône, fiche, `THIRD-PARTY-NOTICES.md` (NOTICE
    et ATTRIBUTION de WordCraft), tests de bout en bout, tag, PR au catalogue
    d'Os-AppMarketPlace (la signature se fait seulement là).
 
-Les chantiers 2 et 3 peuvent avancer en parallèle après le 1.
+Les chantiers 2, 3 et 4 peuvent avancer en parallèle après le 1.
 
 ## Piste en amont
 
@@ -149,16 +152,17 @@ deux fenêtres en même temps.
 
 ## Plus tard
 
-- GridCraft (tableur), même méthode, et le `handoff` entre les deux apps.
+- Kazo Sheet (GridCraft), même méthode, et le `handoff` entre les deux apps.
 - Mobile.
 
 ## Avancement
 
 | Chantier | Branche | Dépend de | État |
 | --- | --- | --- | --- |
-| Plan | `docs/word-plan` | réponses 2, 5, 7 | En cours |
+| Plan | `docs/word-plan` | réponses 8, 9 | En cours |
 | 1. Solution et iframe | `word/1-solution` | plan | À faire |
 | 2. Ouvrir et enregistrer | `word/2-open-save` | 1 | À faire |
 | 3. Proxy complet | `word/3-proxy` | 1 | À faire |
-| 4. Store | `word/4-store` | 2, 3 | À faire |
+| 4. Build depuis les sources | `word/4-build-from-source` | 1 | À faire |
+| 5. Store | `word/5-store` | 2, 3, 4 | À faire |
 | Piste en amont | fork de `storytold/craft-libs` | rien | À faire |

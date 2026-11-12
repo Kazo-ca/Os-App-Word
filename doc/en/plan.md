@@ -18,8 +18,8 @@ explorer, "Open with", OS dialogs; it is saved in the user's files.
 
 Nothing is rewritten: the Kazo OS app **wraps WordCraft's web build** and plugs
 its "hosted" mode (`craft-web-host`) into the Kazo OS file system, dialogs and
-file associations. It is the first app of an office suite; GridCraft
-(spreadsheet) will follow with the same method.
+file associations. It is the first app of an office suite; Kazo Sheet
+(spreadsheet, GridCraft) will follow with the same method.
 
 WordCraft is in **alpha** (about 60% ready for real work according to its
 authors, version 0.18 on 2026-11-11). The first work items are also
@@ -30,12 +30,14 @@ integration tests.
 | # | Topic | Decision |
 | --- | --- | --- |
 | 1 | Integration | One **iframe** per window, on a page of the app (`wwwroot/`), with a JavaScript **proxy** in that page. WordCraft runs there in `data-host="page"` mode and only talks to the proxy; the proxy relays to the Kazo window with `postMessage`. Decided 2026-11-11. |
-| 2 | Source of the web build | *Pending.* Recommendation: the official `wordcraft-web-<version>.zip` of the upstream release, **unmodified**, pinned by version and SHA-256. No Rust in CI, and an untouched build avoids the ArtCraft trademark constraint (a modified version must remove the ArtCraft name and logo). |
-| 3 | Repositories | One repository per app: `Kazo-ca/Os-App-Word` (created 2026-11-12 from Os-AppTemplate), later one for GridCraft. The proxy is copied; it becomes a shared package if a third Craft app comes. |
+| 2 | Source of the web build | **Built from source** (Benoit, 2026-11-12): we will need changes and want the code at hand. **For the first tests**, the official `wordcraft-web-<version>.zip` of the upstream release, pinned by version and SHA-256. A modified build must remove the ArtCraft name and logo (trademark licence). See also the shared library (decision 8). |
+| 3 | Repositories | One repository per app: `Kazo-ca/Os-App-Word` (created 2026-11-12 from Os-AppTemplate, the first tests happen there), later one for Kazo Sheet. Benoit, 2026-11-12. |
 | 4 | WordCraft's File › Open | The proxy intercepts the browser's file picker and opens the Kazo OS dialog instead, like Webamp's `FilePromptInterceptor`. In parallel, an `open-request` message is proposed upstream (see "Upstream track"). Decided 2026-11-11. |
-| 5 | Scope of v1 | *Pending.* Recommendation: desktop only, **several windows** (one document per window). |
-| 6 | Name | A Kazo name, "Kazo Word" (Benoit, 2026-11-12). The Store listing says "based on WordCraft by the ArtCraft team", with no ArtCraft logo. |
-| 7 | The word "Word" | *Pending.* "Word" is a Microsoft trademark for a word processor. Recommendation: keep the `Os-App-Word` repository, but pick another display name before publishing to the Store. |
+| 5 | Scope of v1 | Desktop only, **several windows** (one document per window). Benoit, 2026-11-12. |
+| 6 | Names | "**Kazo Word**" (word processor, WordCraft) and "**Kazo Sheet**" (spreadsheet, GridCraft). Benoit, 2026-11-12. The Store listing says "based on WordCraft by the ArtCraft team", with no ArtCraft logo. |
+| 7 | The word "Word" | "Word" is a Microsoft trademark for a word processor. Benoit keeps "Kazo Word" (answer to question 6, 2026-11-12). |
+| 8 | Shared library | *Pending.* Benoit wants a library shared by both apps for their common dependencies. Recommendation: a separate `Kazo.Craft.Host` project in this repository (C# window, proxy, build scripts), moved to its own repository when Kazo Sheet starts. |
+| 9 | Where the upstream sources live | *Pending.* Recommendation: forks `Kazo-ca/wordcraft`, `Kazo-ca/gridcraft` and `Kazo-ca/craft-libs` (the same ones serve the upstream PRs), as git submodules, built by CI. |
 
 ## The integration
 
@@ -77,7 +79,7 @@ Kazo OS window (Blazor, C#)  ⇄  proxy (iframe page)  ⇄  WordCraft (.wasm, ca
   are served at `_content/<assembly>/` and `.wasm` goes out as
   `application/wasm`. A package accepts 64 MiB compressed and 128 MiB
   extracted: if the web build goes over, an ADR in Kazo OS is needed before work
-  item 4.
+  item 5.
 
 ## Work items
 
@@ -95,11 +97,12 @@ Series `word/base` (created from `main` once the plan is validated), one
 3. **Full proxy** (`word/3-proxy`): OS shortcuts, file picker interception,
    author, OS dark mode and language if WordCraft accepts them through its
    commands, window menu.
-4. **Store** (`word/4-store`): icon, listing, `THIRD-PARTY-NOTICES.md`
+4. **Build from source** (`word/4-build-from-source`): submodule of the WordCraft fork, `wasm32` build with Trunk in CI, same result as the zip; ArtCraft marks removed as soon as a change is made; shared library (decisions 8 and 9).
+5. **Store** (`word/5-store`): icon, listing, `THIRD-PARTY-NOTICES.md`
    (WordCraft's NOTICE and ATTRIBUTION), end-to-end tests, tag, catalog PR in
    Os-AppMarketPlace (signing happens only there).
 
-Work items 2 and 3 can run in parallel after 1.
+Work items 2, 3 and 4 can run in parallel after 1.
 
 ## Upstream track
 
@@ -145,16 +148,17 @@ save it, reopen it; Save As; two windows at once.
 
 ## Later
 
-- GridCraft (spreadsheet), same method, and the `handoff` between both apps.
+- Kazo Sheet (GridCraft), same method, and the `handoff` between both apps.
 - Mobile.
 
 ## Progress
 
 | Work item | Branch | Depends on | State |
 | --- | --- | --- | --- |
-| Plan | `docs/word-plan` | answers 2, 5, 7 | In progress |
+| Plan | `docs/word-plan` | answers 8, 9 | In progress |
 | 1. Solution and iframe | `word/1-solution` | plan | To do |
 | 2. Open and save | `word/2-open-save` | 1 | To do |
 | 3. Full proxy | `word/3-proxy` | 1 | To do |
-| 4. Store | `word/4-store` | 2, 3 | To do |
+| 4. Build from source | `word/4-build-from-source` | 1 | To do |
+| 5. Store | `word/5-store` | 2, 3, 4 | To do |
 | Upstream track | fork of `storytold/craft-libs` | nothing | To do |
