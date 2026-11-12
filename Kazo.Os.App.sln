@@ -1,0 +1,43 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5A4699D9-813E-4B78-82BF-AA57C4FF0C76}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{389F8795-F80B-491F-87C5-2184775823FB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kazo.Os.App", "src\Kazo.Os.App\Kazo.Os.App.csproj", "{4C1BB375-4AC3-46E7-BACA-28C6F6017AA7}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kazo.Os.App.Os", "src\Kazo.Os.App.Os\Kazo.Os.App.Os.csproj", "{27CFFCC2-EFD3-463A-AC47-5674E46BD9C4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kazo.Os.App.Tests", "tests\Kazo.Os.App.Tests\Kazo.Os.App.Tests.csproj", "{D95AED01-87CD-4475-807F-724A6C3372BB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4C1BB375-4AC3-46E7-BACA-28C6F6017AA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C1BB375-4AC3-46E7-BACA-28C6F6017AA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C1BB375-4AC3-46E7-BACA-28C6F6017AA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C1BB375-4AC3-46E7-BACA-28C6F6017AA7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{27CFFCC2-EFD3-463A-AC47-5674E46BD9C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{27CFFCC2-EFD3-463A-AC47-5674E46BD9C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{27CFFCC2-EFD3-463A-AC47-5674E46BD9C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{27CFFCC2-EFD3-463A-AC47-5674E46BD9C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D95AED01-87CD-4475-807F-724A6C3372BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D95AED01-87CD-4475-807F-724A6C3372BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D95AED01-87CD-4475-807F-724A6C3372BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D95AED01-87CD-4475-807F-724A6C3372BB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{4C1BB375-4AC3-46E7-BACA-28C6F6017AA7} = {5A4699D9-813E-4B78-82BF-AA57C4FF0C76}
+		{27CFFCC2-EFD3-463A-AC47-5674E46BD9C4} = {5A4699D9-813E-4B78-82BF-AA57C4FF0C76}
+		{D95AED01-87CD-4475-807F-724A6C3372BB} = {389F8795-F80B-491F-87C5-2184775823FB}
+	EndGlobalSection
+EndGlobal
