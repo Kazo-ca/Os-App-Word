@@ -85,3 +85,7 @@ These packages are not signed: apps are signed only in the Kazo OS Store reposit
 (`Kazo-ca/Os-AppMarketPlace`), when it builds your app from the catalog (ADR 0219). Kazo OS checks
 them by their SHA-256 and asks an administrator before installing from an untrusted source. Users
 who want a signed package install your app from the Kazo OS Store.
+
+## Plan
+
+The plan of the Kazo Word app (WordCraft in Kazo OS) is in [`doc/en/plan.md`](doc/en/plan.md); the documentation index is [`doc/en/README.md`](doc/en/README.md).
