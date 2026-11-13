@@ -62,6 +62,46 @@ public sealed class WebStorageFileTests
     }
 
     [Fact]
+    public async Task A_save_that_starts_while_another_is_writing_waits_and_writes_the_latest_values()
+    {
+        // The file system can take longer than the window's half second between two saves: the
+        // first save's write must not land after the second one and put back older values.
+        TaskCompletionSource firstWrite = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        List<string> written = [];
+        int writing = 0;
+        int overlaps = 0;
+        WebStorageFile file = new(
+            "/home/neo/",
+            (path, _) => Task.FromException<string>(new FileNotFoundException(path)),
+            async (path, text, _) =>
+            {
+                if (Interlocked.Increment(ref writing) > 1)
+                {
+                    Interlocked.Increment(ref overlaps);
+                }
+
+                if (written.Count == 0 && !firstWrite.Task.IsCompleted)
+                {
+                    await firstWrite.Task;
+                }
+
+                written.Add(text);
+                Interlocked.Decrement(ref writing);
+            },
+            (_, _) => Task.CompletedTask);
+
+        file.Set("wordcraft.ui", """{"statusCount":"words"}""");
+        Task first = file.SaveAsync();
+        file.Set("wordcraft.ui", """{"statusCount":"characters"}""");
+        Task second = file.SaveAsync();
+        firstWrite.SetResult();
+        await Task.WhenAll(first, second);
+
+        Assert.Equal(0, overlaps);
+        Assert.Contains("characters", written[^1], StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task The_same_value_again_is_no_change_and_a_removal_is_one()
     {
         WebStorageFile file = Create();

@@ -161,3 +161,60 @@ test('two Kazo Word windows run at once, and a click in WordCraft brings its win
     assert.deepEqual(errors, []);
     await page.close();
 });
+
+test('a document survives when its window comes to the front, and back behind (decision 14)', { timeout: 300_000 }, async () => {
+    const { page, errors } = await bootPage();
+
+    await openApp(page, 'Kazo Word');
+    await waitForWordCraft(page, 1);
+    const [frame] = wordFrames(page);
+    const firstId = await wordWindows(page).first().getAttribute('data-window-id');
+    const byId = id => page.locator(`article[data-window-id="${id}"]`);
+    await typeInBlankDocument(page, frame, byId(firstId).locator('iframe.word-frame-iframe'), 'kept');
+    assert.match(await documentText(frame), /kept/);
+
+    // A second window opens in front, then the first comes back to the front by a click in its
+    // WordCraft. Kazo OS keeps the windows in their opening order in the page (ADR 0244), so the
+    // first iframe is never moved: same frame, same WordCraft, same document.
+    await openApp(page, 'Kazo Word');
+    await waitForWordCraft(page, 2);
+    const secondId = await wordWindows(page).nth(1).getAttribute('data-window-id');
+    const title = await byId(secondId).locator('h2').first().boundingBox();
+    await page.mouse.move(title.x + 40, title.y + title.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(title.x + 290, title.y + title.height / 2 + 120, { steps: 8 });
+    await page.mouse.up();
+
+    const firstBox = await byId(firstId).locator('iframe.word-frame-iframe').boundingBox();
+    await page.mouse.click(firstBox.x + 120, firstBox.y + firstBox.height - 60);
+    const zOf = id => byId(id).getAttribute('data-window-z').then(Number);
+    await page.waitForFunction(
+        ([front, back]) => {
+            const z = id => Number(document.querySelector(`article[data-window-id="${id}"]`)?.getAttribute('data-window-z'));
+            return z(front) > z(back);
+        },
+        [firstId, secondId],
+        { timeout: 10_000 });
+
+    assert.equal(frame.isDetached(), false, 'the first iframe was not reloaded');
+    assert.match(await documentText(frame), /kept/);
+
+    // And back behind: the second window comes to the front by a click on the part of its title
+    // bar the first window does not cover (its right end, left of the window buttons).
+    const secondWindow = await byId(secondId).boundingBox();
+    const secondTitle = await byId(secondId).locator('h2').first().boundingBox();
+    await page.mouse.click(secondWindow.x + secondWindow.width - 200, secondTitle.y + secondTitle.height / 2);
+    await page.waitForFunction(
+        ([front, back]) => {
+            const z = id => Number(document.querySelector(`article[data-window-id="${id}"]`)?.getAttribute('data-window-z'));
+            return z(front) > z(back);
+        },
+        [secondId, firstId],
+        { timeout: 10_000 });
+    assert.ok(await zOf(secondId) > await zOf(firstId));
+    assert.equal(frame.isDetached(), false, 'the first iframe was not reloaded');
+    assert.match(await documentText(frame), /kept/);
+
+    assert.deepEqual(errors, []);
+    await page.close();
+});
