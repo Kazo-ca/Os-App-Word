@@ -49,11 +49,12 @@ Finding of 2026-11-13: the Store builds an app from the commit named in `store.j
 `build-app` action of Os-AppMarketPlace). It has no Rust, no Trunk and no WordCraft fork. The
 Store therefore cannot build WordCraft: it needs a build already made.
 
-- **A. In this repository ✨**: `wwwroot/wordcraft/` holds the `.js`, the `.wasm` (about
-  13 MB) and the licences, with a provenance file (version, commit, SHA-256). A script
+- **A. In this repository ✨**: `wwwroot/wordcraft/` holds the `.js`, the `.wasm` (61 MB,
+  measured in work item 1; the plan said about 13 MB) and the licences, with a provenance file (version, commit, SHA-256). A script
   updates them: from the official zip (work item 1), then from our own build (work item 4),
-  through a PR. This is what Webamp does. The repository grows by about 5 MB at each
-  WordCraft version upgrade.
+  through a PR. This is what Webamp does. The repository grows by about 22 MB (the compressed
+  `.wasm`) at each WordCraft version upgrade, and GitHub warns on push about a file over
+  50 MB (it refuses one over 100 MB).
 - **B. Downloaded during the build**: an MSBuild target downloads the pinned zip and checks
   its SHA-256. The repository stays light and the Store has nothing to change (its build
   machine has network access). But the package content is no longer entirely in the reviewed
@@ -67,12 +68,13 @@ Store therefore cannot build WordCraft: it needs a build already made.
 ## 4. Files
 
 ```
-Kazo.Word.sln
+Kazo.Word.slnx
 src/Kazo.Word/                      the app (assembly Kazo.Word)
   WordApp.cs                        [AppManifest]: ca.kazo.word, formats, capabilities, window
   WordWindow.razor(.cs)(.css)       the window: iframe, loading, error, close guard
   Hosting/WordFrame.cs              C# wrapper of js/word-host.js (calls and events)
   Hosting/FrameMessages.cs          the message types (section 5)
+  Hosting/FrameStartup.cs           loading, WordCraft or error, 60 s timeout, "Retry"
   Documents/DocumentSession.cs      a window's state: bound documents, "modified", decisions
   Documents/SaveDecision.cs         rewrite, ask for a path, exported copy
   Documents/DocumentFormats.cs      extensions, types, dialog filters
@@ -90,7 +92,7 @@ src/Kazo.Word/                      the app (assembly Kazo.Word)
 src/Kazo.Word.Os/                   debug host (from the template)
 tests/Kazo.Word.Tests/              xUnit
 tests/proxy/                        node --test, with a fake WordCraft
-tests/Kazo.Word.E2E/                Playwright, in the debug host
+tests/e2e/                          Playwright (node --test), in the debug host
 tools/vendor-wordcraft.sh           pinned zip or built folder → wwwroot/wordcraft/
 external/KazoOs                     submodule (from the template)
 external/wordcraft                  submodule of the fork (work item 4 only)
@@ -202,6 +204,27 @@ A trial that must prove WordCraft starts in a Kazo window.
   front; the size of the `.kazoapp` package is written in the plan; the result in a published
   OS is written down (expected: failing until decision 10).
 
+**Result (2026-11-13).**
+
+- WordCraft shows in about 4 seconds in the debug host (Release, Kazo OS 3.3.0) and typed text
+  reaches the document, with the WebGPU renderer (`BrowserWebGpu`) and with the WebGL 2
+  renderer (launch argument `--webgl`, which adds `?webgl` to the iframe). WordCraft falls back
+  to WebGL 2 by itself when the browser has no WebGPU adapter.
+- Two windows run at once, each with its own document; a click in WordCraft brings its window
+  to the front.
+- In host mode, WordCraft opens on its start screen (new document, templates): work item 2
+  sends the requested file or creates an empty document.
+- `.kazoapp` package: 22.9 MB, 61.3 MB extracted, 31 files (limits: 64 MiB, 128 MiB, 2000
+  files). The `.wasm` alone is 61 MB.
+- Memory (headless Chromium, software rendering, start screen): about 130 MB for the first
+  window, then about 25 MB per extra window (four windows: 233 MB more than without Kazo Word).
+  The compiled module is shared; a large document will cost more.
+- **Found**: Kazo OS orders the windows in the page by their stacking order. When a window comes
+  to the front its element is moved, and a moved iframe reloads: WordCraft starts again and the
+  document is lost (question 14, section 9). `word-host.js` reconnects the reloaded page, but
+  the document is gone.
+- Published OS: to try once Os#451 is released (decision 10).
+
 ### Work item 2: open and save (`word/2-open-save`)
 
 - File associations and "Open with" (formats of the plan), `OpenRequest`, intents.
@@ -280,5 +303,7 @@ Each accepted proposal removes a workaround from the proxy.
 | --- | --- |
 | WordCraft changes fast (one version a week) | Pinned version; the proxy tests and the Playwright journeys say what a version upgrade breaks. |
 | The Store analyses the app's JavaScript (CodeQL) | WordCraft's generated `.js` will be analysed: to check in work item 5, before the tag. |
-| Memory: each window loads its own WordCraft | Measure in work item 1 with two and four windows. |
+| Memory: each window loads its own WordCraft | Measured in work item 1: about 130 MB for the first window, 25 MB per extra window, without a document. To measure again with large documents in work item 2. |
+| A window coming to the front reloads its iframe (Kazo OS moves its element in the page) | Question 14 asked to Benoit on 2026-11-13; recommendation: Kazo OS keeps a stable order of the windows in the page, stacking staying in `z-index`. |
+| The `.wasm` is 61 MB, not 13 MB | Question 15 asked to Benoit on 2026-11-13; recommendation: keep decision 13. |
 | No GPU | Clear error screen (`failed`). |

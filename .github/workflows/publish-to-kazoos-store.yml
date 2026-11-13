@@ -22,7 +22,7 @@ permissions:
   contents: read
 
 env:
-  APP_DIRECTORY: src/Kazo.Os.App
+  APP_DIRECTORY: src/Kazo.Word
   MARKETPLACE: Kazo-ca/Os-AppMarketPlace
 
 jobs:

@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Kazo.Os.App\Kazo.Os.App.csproj" />
+    <ProjectReference Include="..\..\src\Kazo.Word\Kazo.Word.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="EditorLabel" xml:space="preserve">
+    <value>Word processor</value>
+  </data>
+  <data name="FailedTitle" xml:space="preserve">
+    <value>WordCraft could not start</value>
+  </data>
+  <data name="FailedHint" xml:space="preserve">
+    <value>WordCraft needs WebGPU or WebGL 2 in this browser.</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Starting WordCraft…</value>
+  </data>
+  <data name="LoadingHint" xml:space="preserve">
+    <value>The first start downloads about 23 MB.</value>
+  </data>
+  <data name="Retry" xml:space="preserve">
+    <value>Retry</value>
+  </data>
+  <data name="TimedOut" xml:space="preserve">
+    <value>WordCraft did not answer within {0} seconds.</value>
+  </data>
+</root>

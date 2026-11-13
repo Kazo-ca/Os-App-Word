@@ -1,1 +1,1 @@
-Une app fenêtrée Kazo OS créée avec le modèle kazoos-solution.
+Un traitement de texte pour les documents .docx et .odt, construit sur WordCraft.

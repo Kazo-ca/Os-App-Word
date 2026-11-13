@@ -88,8 +88,8 @@ Kazo OS window (Blazor, C#)  ⇄  proxy (iframe page)  ⇄  WordCraft (.wasm, ca
   at `_content/<assembly>/` and `.wasm` goes out as `application/wasm`, but the
   service worker of the published OS answers a navigation (loading the iframe
   page) with the OS `index.html`. In development the page is served. Size is not
-  a concern: about 13 MB of wasm (5 MB compressed) for limits of 64 MiB
-  compressed and 128 MiB extracted.
+  a concern: measured in work item 1, the package is 22.9 MB (61.3 MB extracted,
+  61 MB of it wasm) for limits of 64 MiB compressed and 128 MiB extracted.
 - **The iframe** carries `allow="fullscreen; clipboard-read; clipboard-write"`.
 
 ## Work items
@@ -168,8 +168,9 @@ save it, reopen it; Save As; two windows at once.
   handled in the Kazo window in work item 2.
 - **Spelling in English only** in the web version: accepted for v1
   (decision 12).
-- **Web build size**: about 13 MB of wasm (5 MB compressed) according to
-  upstream; measured in work item 1.
+- **Web build size**: upstream announced about 13 MB of wasm; measured in
+  work item 1: 61 MB of wasm, a 22.9 MB package, under the Store limits (see
+  the [integration plan](integration-plan.md), question 15).
 - **Alpha and fast pace** (about one release a week): pinned version, upgrades
   deliberate and tested.
 - **Settings outside Kazo files** (`localStorage`, IndexedDB), shared by the
@@ -186,10 +187,10 @@ save it, reopen it; Save As; two windows at once.
 | Work item | Branch | Depends on | State |
 | --- | --- | --- | --- |
 | Plan | `docs/word-plan` | nothing | Merged (PR [#1](https://github.com/Kazo-ca/Os-App-Word/pull/1)) |
-| Check of the plan | `docs/word-plan-verification` | plan | PR [#2](https://github.com/Kazo-ca/Os-App-Word/pull/2) |
-| Detailed integration plan | `docs/word-plan-verification` | check | PR [#2](https://github.com/Kazo-ca/Os-App-Word/pull/2) |
+| Check of the plan | `docs/word-plan-verification` | plan | Merged (PR [#2](https://github.com/Kazo-ca/Os-App-Word/pull/2)) |
+| Detailed integration plan | `docs/word-plan-verification` | check | Merged (PR [#2](https://github.com/Kazo-ca/Os-App-Word/pull/2)) |
 | Kazo OS: iframe page of an installed app | `fix/installed-app-iframe-page` in `Kazo-ca/Os` | decision 10 | PR [Os#451](https://github.com/Kazo-ca/Os/pull/451) (ADR 0243), to merge. Kazo Word will require the first OS version published after 3.3.0. |
-| 1. Solution and iframe | `word/1-solution` | plan | Waiting for Benoit's go |
+| 1. Solution and iframe | `word/1-solution` | plan | In progress (Benoit's go on 2026-11-13). WordCraft runs in a Kazo window; questions 14 (iframe reload) and 15 (size) asked. |
 | 2. Open and save | `word/2-open-save` | 1 | To do |
 | 3. Full proxy | `word/3-proxy` | 1 | To do |
 | 4. Build from source | `word/4-build-from-source` | 1, forks created | To do |
