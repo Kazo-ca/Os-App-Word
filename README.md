@@ -5,7 +5,8 @@
 A word processor for Kazo OS: [WordCraft](https://github.com/storytold/wordcraft) (MIT or
 Apache-2.0) runs in an iframe of a Kazo OS window, driven by the window's C# through a small
 proxy. Work in progress: see the [plan](doc/en/plan.md) and the
-[integration plan](doc/en/integration-plan.md).
+[integration plan](doc/en/integration-plan.md). WordCraft's notices and the licenses in the
+package: [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
 
 | Folder | Content |
 | --- | --- |
@@ -14,11 +15,13 @@ proxy. Work in progress: see the [plan](doc/en/plan.md) and the
 | `tests/Kazo.Word.Tests` | C# tests: manifest, start of WordCraft, the WordCraft build matches its provenance |
 | `tests/proxy` | Tests of the iframe proxy (with a fake WordCraft) and of the OS-side module, under node |
 | `tests/e2e` | Journeys in the Kazo OS host with Playwright: start, typing, WebGPU and WebGL 2, two windows |
+| `tests/installed` | The app as the Store installs it, in a published Kazo OS: `kazopkg install`, a `.docx` opened by double-click, the Store screenshots |
 | `tools/vendor-wordcraft.sh` | Puts a WordCraft build in `src/Kazo.Word/wwwroot/wordcraft/` with its provenance |
 | `tools/build-wordcraft.sh` | Compiles WordCraft from `external/wordcraft` and vendors it |
 | `external/KazoOs` | The Kazo OS repository as a git submodule, on a release tag |
 | `external/wordcraft` | Our WordCraft fork (`Kazo-ca/wordcraft`) as a git submodule: only needed to compile WordCraft |
-| `store/` | What the Kazo OS Store shows: icon (PNG 256×256), short descriptions, descriptions, `store.json` |
+| `store/` | What the Kazo OS Store shows: icon (PNG 256×256), short descriptions, descriptions, screenshots, `store.json` |
+| `THIRD-PARTY-NOTICES.md` | WordCraft and what it bundles; linked into the package with `LICENSE` (`wwwroot/legal/`) |
 
 ## WordCraft's build
 
@@ -59,6 +62,18 @@ npm ci
 npm test               # the proxy and the OS-side module
 npm run test:e2e       # Playwright, in the Release host (Chromium): start, open and save
 ```
+
+The app as the Store installs it, in a published Kazo OS (not in CI: about five minutes):
+
+```bash
+dotnet build src/Kazo.Word -c Release -t:KazoOsPack
+# kazoos-wasm-<version>.zip of a Kazo OS release (3.3.2 or later), unzipped in <os>
+npm run test:installed -- <os> [packages folder] [screenshots folder]
+```
+
+It installs Kazo Word with `sudo kazopkg install Kazo-ca/Os-App-Word` (GitHub answered from the
+local packages), saves a `.docx`, double-clicks it in the File Explorer and checks Kazo Word opens
+it. With a screenshots folder it also writes the Store's screenshots (`store/screenshots/`).
 
 Launch `launch ca.kazo.word --webgl` in the Kazo OS terminal to force WordCraft's WebGL 2
 renderer.

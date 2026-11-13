@@ -1,1 +1,1 @@
-Un traitement de texte pour les documents .docx et .odt, construit sur WordCraft.
+Un traitement de texte pour les documents .docx et .odt, basé sur WordCraft de l'équipe ArtCraft.

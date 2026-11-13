@@ -20,6 +20,7 @@ tests and the completion criterion. Each work-item thread starts from this page.
 | 15 | The real `.wasm` is 61 MB: decision 13 stays. | Benoit, 2026-11-13 |
 | 16 | No Kazo menu for v1: WordCraft's File tab is enough (the SDK gives no window menu yet). | Benoit, 2026-11-13 |
 | 17 | Kazo OS raises its maximum file size (16 MiB today, ADR 0094) so the 60 MB `.wasm` installs: Kazo OS ADR 0245, 128 MiB per file, released in Kazo OS 3.3.2. | Benoit, 2026-11-13 |
+| 18 | The first Store version stays **0.1.0** (the manifest's version): the number says it is a first trial, WordCraft being in alpha. | Benoit, 2026-11-13 |
 
 ## 2. The three parts
 
@@ -410,6 +411,32 @@ A trial that must prove WordCraft starts in a Kazo window.
   there), a row in Kazo OS's `features.md`.
 - **Done when**: Kazo Word installs from the Store and opens a `.docx` on double-click.
 
+Result (2026-11-13):
+
+- Icon: `store/icon.png` is the app's own icon (`wwwroot/icons/app.svg`, a page and a pen)
+  rendered at 256 × 256; it replaces the template's placeholder. No ArtCraft mark anywhere.
+- Listing: `store/description.{en,fr}.md` and the short descriptions credit "WordCraft by the
+  ArtCraft team" and list the known limits (alpha, English spelling, Asian fonts, WebGPU or
+  WebGL 2, size and memory, printing, Kazo OS 3.3.2). Three screenshots in `store/screenshots/`,
+  taken in the published OS by the journey below (WordCraft's own report and letter templates).
+- `THIRD-PARTY-NOTICES.md` and `THIRD-PARTY-NOTICES-fr.md` at the root. The project links them
+  and `LICENSE` into `wwwroot/legal/`, so the package carries them next to WordCraft's own
+  `LICENSE-MIT`, `LICENSE-APACHE`, `NOTICE`, `ATTRIBUTION.md` and `OFL-*.txt`
+  (`LegalFilesTests` checks the links, the files, the WordCraft version named in the notices,
+  and the credit in the listing).
+- Version 0.1.0 (decision 18), minimum Kazo OS 3.3.2 (decision 17).
+- Journey `tests/installed/install-and-open.mjs` (`npm run test:installed -- <OS wwwroot>`):
+  the published Kazo OS 3.3.2 (`kazoos-wasm-3.3.2.zip` of the release) served as a plain static
+  host, `sudo kazopkg install Kazo-ca/Os-App-Word` answered from the local packages, a `.docx`
+  written with Kazo Word, closed, then **double-clicked in the File Explorer: Kazo Word opens it**,
+  and the license files answer from the installed package. Green on 2026-11-13, with no sign-in
+  again after the install. With a third argument it also writes the Store screenshots.
+- Found: on SwiftShader, a page screenshot does not show what WebGPU draws (the canvas comes out
+  empty); the screenshot run leaves WebGPU off, so WordCraft draws with WebGL 2.
+- Then: PR `word/base` → `main` (Benoit's decision), tag `v0.1.0` with "Tag a release", catalog
+  PR in Os-AppMarketPlace, row in Kazo OS's `features.md`; the Store install is checked once the
+  catalog is published.
+
 ### Order
 
 Work item 1 first. Then 2, 3 and 4 in parallel, in three threads: 2 touches the C#, 3 touches
@@ -434,7 +461,7 @@ Each accepted proposal removes a workaround from the proxy.
 | Risk | Answer |
 | --- | --- |
 | WordCraft changes fast (one version a week) | Pinned version; the proxy tests and the Playwright journeys say what a version upgrade breaks. |
-| The Store analyses the app's JavaScript (CodeQL) | WordCraft's generated `.js` will be analysed: to check in work item 5, before the tag. |
+| The Store analyses the app's JavaScript (CodeQL) | WordCraft's generated `.js` (180 KB of wasm-bindgen glue) is analysed by the catalog PR's CodeQL; its results are a summary in the review comment, not a gate. Read in work item 5 on the catalog PR. |
 | Memory: each window loads its own WordCraft | Measured in work item 1: about 130 MB for the first window, 25 MB per extra window, without a document. To measure again with large documents in work item 2. |
 | A window coming to the front reloads its iframe (Kazo OS moves its element in the page) | Decision 14: Kazo OS keeps a stable order of the windows in the page, stacking staying in `z-index` (separate thread of `Kazo-ca/Os`). Released in Kazo OS 3.3.1; the journey "the document survives when its window comes to the front" checks it. |
 | Kazo OS refuses a file over 16 MiB (ADR 0094), the `.wasm` is 60 MB | Decision 17: Kazo OS 3.3.2 accepts 128 MiB per file (ADR 0245); Kazo Word installs in the published OS. |

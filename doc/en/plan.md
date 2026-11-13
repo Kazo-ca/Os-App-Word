@@ -194,7 +194,7 @@ save it, reopen it; Save As; two windows at once.
 | Kazo OS: iframe page of an installed app | `fix/installed-app-iframe-page` in `Kazo-ca/Os` | decision 10 | Done: PR [Os#451](https://github.com/Kazo-ca/Os/pull/451) (ADR 0243), and the stable window order PR [Os#452](https://github.com/Kazo-ca/Os/pull/452) (ADR 0244), released in Kazo OS 3.3.1; with 128 MiB per file (ADR 0245, decision 17), Kazo OS 3.3.2 is the minimum version of Kazo Word. |
 | 1. Solution and iframe | `word/1-solution` | plan | Done on 2026-11-13 (result in the [integration plan](integration-plan.md#work-item-1-solution-and-iframe-word1-solution)). The document survives on Kazo OS 3.3.1; Kazo Word installs and runs in the published OS 3.3.2 (decision 17). |
 | 2. Open and save | `word/2-open-save` | 1 | Done 2026-11-13 (result in the [integration plan](integration-plan.md#work-item-2-open-and-save-word2-open-save)), PR to `word/base`. |
-| 3. Full proxy | `word/3-proxy` | 1 | To do |
+| 3. Full proxy | `word/3-proxy` | 1 | Done 2026-11-13 (result in the [integration plan](integration-plan.md)), PR [#7](https://github.com/Kazo-ca/Os-App-Word/pull/7) merged into `word/base`. |
 | 4. Build from source | `word/4-build-from-source` | 1, forks created | Done 2026-11-13 (result in the [integration plan](integration-plan.md#work-item-4-build-from-source-word4-build-from-source)), PR to `word/base`. |
-| 5. Store | `word/5-store` | 2, 3, 4 | To do |
+| 5. Store | `word/5-store` | 2, 3, 4 | Listing, notices and installed-app journey done 2026-11-13 (result in the [integration plan](integration-plan.md#work-item-5-store-word5-store)); then tag `v0.1.0` and catalog PR after `word/base` reaches `main`. |
 | Upstream track | fork of `storytold/craft-libs` | nothing | To do |

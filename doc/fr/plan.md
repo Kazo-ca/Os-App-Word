@@ -201,7 +201,7 @@ deux fenêtres en même temps.
 | Kazo OS : page d'iframe d'une app installée | `fix/installed-app-iframe-page` dans `Kazo-ca/Os` | décision 10 | Fait : PR [Os#451](https://github.com/Kazo-ca/Os/pull/451) (ADR 0243), et l'ordre stable des fenêtres PR [Os#452](https://github.com/Kazo-ca/Os/pull/452) (ADR 0244), publiées dans Kazo OS 3.3.1 ; avec 128 Mio par fichier (ADR 0245, décision 17), Kazo OS 3.3.2 est la version minimale de Kazo Word. |
 | 1. Solution et iframe | `word/1-solution` | plan | Fait le 2026-11-13 (résultat dans le [plan d'intégration](integration-plan.md#chantier-1--solution-et-iframe-word1-solution)). Le document survit sur Kazo OS 3.3.1 ; Kazo Word s'installe et tourne dans l'OS publié 3.3.2 (décision 17). |
 | 2. Ouvrir et enregistrer | `word/2-open-save` | 1 | Fait le 2026-11-13 (résultat dans le [plan d'intégration](integration-plan.md#chantier-2--ouvrir-et-enregistrer-word2-open-save)), PR vers `word/base`. |
-| 3. Proxy complet | `word/3-proxy` | 1 | À faire |
+| 3. Proxy complet | `word/3-proxy` | 1 | Fait le 2026-11-13 (résultat dans le [plan d'intégration](integration-plan.md)), PR [#7](https://github.com/Kazo-ca/Os-App-Word/pull/7) fusionnée dans `word/base`. |
 | 4. Build depuis les sources | `word/4-build-from-source` | 1, forks créés | Fait le 2026-11-13 (résultat dans le [plan d'intégration](integration-plan.md#chantier-4--build-depuis-les-sources-word4-build-from-source)), PR vers `word/base`. |
-| 5. Store | `word/5-store` | 2, 3, 4 | À faire |
+| 5. Store | `word/5-store` | 2, 3, 4 | Fiche, avis et parcours de l'app installée faits le 2026-11-13 (résultat dans le [plan d'intégration](integration-plan.md#chantier-5--store-word5-store)) ; ensuite tag `v0.1.0` et PR du catalogue quand `word/base` arrive dans `main`. |
 | Piste en amont | fork de `storytold/craft-libs` | rien | À faire |

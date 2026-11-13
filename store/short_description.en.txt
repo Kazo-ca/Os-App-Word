@@ -1,1 +1,1 @@
-A word processor for .docx and .odt documents, built on WordCraft.
+A word processor for .docx and .odt documents, based on WordCraft by the ArtCraft team.

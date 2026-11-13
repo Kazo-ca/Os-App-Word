@@ -20,6 +20,7 @@ qui est livré, les tests et le critère de fin. Chaque fil de chantier part de 
 | 15 | Le `.wasm` réel fait 61 Mo : la décision 13 reste. | Benoit, 2026-11-13 |
 | 16 | Pas de menu Kazo pour la v1 : l'onglet Fichier de WordCraft suffit (le SDK ne donne pas encore de menu de fenêtre). | Benoit, 2026-11-13 |
 | 17 | Kazo OS relève sa taille maximale de fichier (16 Mio aujourd'hui, ADR 0094) pour que le `.wasm` de 60 Mo s'installe : ADR 0245 de Kazo OS, 128 Mio par fichier, publiée dans Kazo OS 3.3.2. | Benoit, 2026-11-13 |
+| 18 | La première version du Store reste **0.1.0** (la version du manifeste) : le numéro dit que c'est un premier essai, WordCraft étant en alpha. | Benoit, 2026-11-13 |
 
 ## 2. Les trois parties
 
@@ -419,6 +420,34 @@ Un essai qui doit prouver que WordCraft démarre dans une fenêtre Kazo.
   là-bas seulement), ligne dans `features.md` de Kazo OS.
 - **Terminé quand** : Kazo Word s'installe depuis le Store et ouvre un `.docx` par double-clic.
 
+Résultat (2026-11-13) :
+
+- Icône : `store/icon.png` est l'icône propre de l'app (`wwwroot/icons/app.svg`, une page et un
+  stylo) rendue en 256 × 256 ; elle remplace celle du modèle. Aucune marque ArtCraft nulle part.
+- Fiche : `store/description.{en,fr}.md` et les descriptions courtes créditent « WordCraft de
+  l'équipe ArtCraft » et listent les limites connues (alpha, orthographe anglaise, polices
+  asiatiques, WebGPU ou WebGL 2, taille et mémoire, impression, Kazo OS 3.3.2). Trois captures
+  dans `store/screenshots/`, prises dans l'OS publié par le parcours ci-dessous (modèles de
+  rapport et de lettre de WordCraft).
+- `THIRD-PARTY-NOTICES.md` et `THIRD-PARTY-NOTICES-fr.md` à la racine. Le projet les lie, avec
+  `LICENSE`, dans `wwwroot/legal/` : le paquet les contient à côté des `LICENSE-MIT`,
+  `LICENSE-APACHE`, `NOTICE`, `ATTRIBUTION.md` et `OFL-*.txt` de WordCraft (`LegalFilesTests`
+  vérifie les liens, les fichiers, la version de WordCraft citée dans les avis et le crédit dans
+  la fiche).
+- Version 0.1.0 (décision 18), Kazo OS 3.3.2 minimum (décision 17).
+- Parcours `tests/installed/install-and-open.mjs` (`npm run test:installed -- <wwwroot de l'OS>`) :
+  Kazo OS 3.3.2 publié (`kazoos-wasm-3.3.2.zip` de la release) servi comme un hébergement statique
+  simple, `sudo kazopkg install Kazo-ca/Os-App-Word` servi depuis les paquets locaux, un `.docx`
+  écrit avec Kazo Word, fermé, puis **double-cliqué dans l'Explorateur de fichiers : Kazo Word
+  l'ouvre**, et les fichiers de licence répondent depuis le paquet installé. Vert le 2026-11-13,
+  sans nouvelle connexion après l'installation. Avec un troisième argument, il écrit aussi les
+  captures du Store.
+- Constat : avec SwiftShader, une capture de page ne montre pas ce que WebGPU dessine (le canevas
+  sort vide) ; la passe de captures laisse WebGPU éteint, WordCraft dessine alors avec WebGL 2.
+- Ensuite : PR `word/base` → `main` (décision de Benoit), tag `v0.1.0` par « Tag a release », PR
+  au catalogue d'Os-AppMarketPlace, ligne dans `features.md` de Kazo OS ; l'installation depuis le
+  Store se vérifie une fois le catalogue publié.
+
 ### Ordre
 
 Le chantier 1 d'abord. Ensuite 2, 3 et 4 en parallèle, dans trois fils : 2 touche le C#, 3
@@ -444,7 +473,7 @@ Chaque proposition acceptée retire un contournement du proxy.
 | Risque | Réponse |
 | --- | --- |
 | WordCraft change vite (une version par semaine) | Version épinglée ; les tests du proxy et les parcours Playwright disent ce qu'une montée de version casse. |
-| Le Store analyse le JavaScript de l'app (CodeQL) | Le `.js` généré de WordCraft sera analysé : à vérifier au chantier 5, avant le tag. |
+| Le Store analyse le JavaScript de l'app (CodeQL) | Le `.js` généré de WordCraft (180 Ko de liaison wasm-bindgen) est analysé par le CodeQL de la PR du catalogue ; ses résultats sont résumés dans le commentaire de revue, sans bloquer. Lu au chantier 5 sur la PR du catalogue. |
 | Mémoire : chaque fenêtre charge son propre WordCraft | Mesuré au chantier 1 : environ 130 Mo pour la première fenêtre, 25 Mo par fenêtre de plus, sans document. À refaire avec de gros documents au chantier 2. |
 | Une fenêtre qui passe devant recharge son iframe (Kazo OS déplace son élément dans la page) | Décision 14 : Kazo OS garde un ordre stable des fenêtres dans la page, l'empilement restant en `z-index` (fil à part de `Kazo-ca/Os`). Publié dans Kazo OS 3.3.1 ; le parcours « le document survit quand sa fenêtre passe devant » le vérifie. |
 | Kazo OS refuse un fichier de plus de 16 Mio (ADR 0094), le `.wasm` fait 60 Mo | Décision 17 : Kazo OS 3.3.2 accepte 128 Mio par fichier (ADR 0245) ; Kazo Word s'installe dans l'OS publié. |
