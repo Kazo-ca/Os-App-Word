@@ -380,9 +380,10 @@ Un essai qui doit prouver que WordCraft démarre dans une fenêtre Kazo.
   octet pour octet (version de Rust et crédits rafraîchis par la release amont). Avec un Rust plus
   ancien (1.97), le module importait quelques fonctions WebGPU et vidéo de plus : le workflow prend le Rust
   stable du jour, comme la release amont.
-- Tests sur ce build : 125 xUnit, 31 tests du proxy, 12 parcours Playwright. Un parcours
-  (insérer une image depuis les fichiers Kazo) a échoué une fois dans la suite complète, puis est
-  passé seul et à la reprise de la suite : instable, pas lié au build.
+- Tests sur ce build : 125 xUnit, 31 tests du proxy, 12 parcours Playwright. Le parcours
+  « insérer une image depuis les fichiers Kazo » échouait parfois (aussi sur `word/base`) : il
+  importait l'image avant que l'explorateur de fichiers ait sa vue, et l'explorateur ignore alors
+  l'import. Il attend maintenant la première liste du dossier.
 - Mesures pour la décision 8 : `.wasm` 60 242 518 octets (22,2 Mo en gzip -9), module
   JavaScript 182 Ko. Données incluses dans le `.wasm`, d'après les fichiers sources : traductions
   de l'interface environ 4,6 Mo (51 langues), données d'orthographe et de césure environ 3,0 Mo,
