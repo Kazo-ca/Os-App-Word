@@ -4,7 +4,9 @@
 // them, WordCraft's canvas events (wordcraft:ready, failed, save, dirty) to the Kazo Word window
 // and the window's messages (open) to WordCraft. The window hands over one MessagePort with its
 // first message, `init`; messages that happen before it are kept and sent once the port is there.
-// A click anywhere in the page sends `focus`, so the Kazo window comes to the front.
+// A click anywhere in the page sends `focus`, so the Kazo window comes to the front. A `command`
+// from the window calls WordCraft's page API (`window.wordcraft.request`) and is answered by a
+// `result` with the same id.
 //
 // The proxy decides nothing: every decision is in the window's C#.
 
@@ -17,7 +19,43 @@ export const MessageTypes = Object.freeze({
     save: "save",
     dirty: "dirty",
     focus: "focus",
+    command: "command",
+    result: "result",
 });
+
+/** How long a `command` may wait for WordCraft when the window gives no time, in milliseconds. */
+export const DefaultCommandTimeoutMs = 10_000;
+
+/**
+ * Runs one `command` of the window on WordCraft's page API and builds its `result`. The page API
+ * resolves with the command's value and rejects with WordCraft's error (a refused command, an
+ * unknown method, no document open).
+ * @param {{ request(method: string, params: object): Promise<unknown> } | undefined} api `window.wordcraft`.
+ * @param {{ id: number, method: string, params?: object, timeoutMs?: number }} command
+ * @returns {Promise<{ type: string, id: number, ok: boolean, value?: unknown, error?: string }>}
+ */
+export async function runCommand(api, command) {
+    const answer = (ok, field) => ({ type: MessageTypes.result, id: command.id, ok, ...field });
+    if (typeof api?.request !== "function") {
+        return answer(false, { error: "WordCraft is not ready" });
+    }
+
+    const timeoutMs = Number.isFinite(command.timeoutMs) && command.timeoutMs > 0
+        ? command.timeoutMs
+        : DefaultCommandTimeoutMs;
+    let timer;
+    const timeout = new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error(`${command.method}: no answer after ${timeoutMs} ms`)), timeoutMs);
+    });
+    try {
+        const value = await Promise.race([api.request(String(command.method), command.params ?? {}), timeout]);
+        return answer(true, { value: value ?? null });
+    } catch (error) {
+        return answer(false, { error: String(error?.message ?? error) });
+    } finally {
+        clearTimeout(timer);
+    }
+}
 
 /** Path of WordCraft's provenance file, relative to this page; it names the glue and the .wasm. */
 export const BuildManifestPath = "../wordcraft/wordcraft.json";
@@ -47,9 +85,10 @@ export async function loadWordCraft(manifestUrl) {
  * @param {() => Promise<void>} options.start Starts WordCraft (loadWordCraft in the browser).
  * @param {string} options.origin The only origin `init` is accepted from (this page's own).
  * @param {object|null} [options.parent] The window allowed to send `init` (the page's parent).
+ * @param {() => object | undefined} [options.api] Gives WordCraft's page API (`window.wordcraft`).
  * @returns {{ stopped: Promise<void> }} `stopped` settles when the start attempt ended.
  */
-export function startProxy({ page, canvas, start, origin, parent = null }) {
+export function startProxy({ page, canvas, start, origin, parent = null, api = () => undefined }) {
     let port = null;
     let settled = false;
     const outbox = [];
@@ -87,6 +126,8 @@ export function startProxy({ page, canvas, start, origin, parent = null }) {
             canvas.dispatchEvent(new CustomEvent("wordcraft:open", {
                 detail: { name: message.name, bytes: message.bytes },
             }));
+        } else if (message?.type === MessageTypes.command) {
+            runCommand(api(), message).then((result) => send(result));
         }
     };
 
@@ -138,5 +179,6 @@ if (typeof document !== "undefined" && document.getElementById("wordcraft_canvas
         start: () => loadWordCraft(new URL(BuildManifestPath, import.meta.url)),
         origin: window.location.origin,
         parent: window.parent,
+        api: () => window.wordcraft,
     });
 }
