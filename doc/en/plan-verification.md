@@ -35,7 +35,7 @@ split into work items are confirmed by the code. Seven points change, one of the
 | Commands for the C# side (`window.wordcraft`) | `apps/wordcraft-web/src/api.rs`, `docs/control-protocol.md` | Confirmed. `ui.theme` and `ui.language` already exist: the OS dark mode and language are set with nothing to ask upstream. `ui.inspect` lists the open documents with their "modified" state. |
 | The proxy can take back the OS shortcuts | `crates/eframe/src/web/events.rs` in the egui fork | Confirmed. WordCraft listens for keys on the canvas: a capture-phase listener on the iframe page runs before it. |
 | The proxy can intercept the file picker | `src/backend/wasm.rs` in `rfd` 0.17.2 | Confirmed. `rfd` creates a file field in an `rfd-overlay` block, listens for `change` and `cancel`, then calls `click()`. One capture-phase click listener is enough. |
-| Package size | `packaging/web/README.md` | About 13 MB of wasm, 5 MB compressed: far from the 64 MiB and 128 MiB limits. No ADR needed. |
+| Package size | `packaging/web/README.md` | About 13 MB of wasm, 5 MB compressed: far from the 64 MiB and 128 MiB limits. No ADR needed. **Corrected in work item 1**: the 0.18.1 `.wasm` is 61 MB and the package 22.9 MB (61.3 MB extracted), still under the limits. |
 | Isolation headers | `service-worker.published.js` in Kazo OS | The service worker already adds COOP, COEP and CORP, which WordCraft's hosting note asks for. |
 | Kazo OS side | SDK 3.3.0 | Open and save dialogs, file associations, `IWindowCloseGuard`, the user's display name, several windows per app: all exist. |
 

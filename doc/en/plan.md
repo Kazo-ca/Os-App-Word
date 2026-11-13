@@ -45,6 +45,8 @@ integration tests.
 | 11 | Upstream track | **Join the existing issues**; a new issue only for what is missing; Claude prepares the texts, Benoit posts them. Benoit, 2026-11-13. |
 | 12 | Spelling | In English only in the web version: **accepted for v1**, noted as a known limit in the Store listing. Benoit, 2026-11-13. |
 | 13 | Where the WordCraft build lives | **In this repository**, under `wwwroot/wordcraft/`, with a provenance file (version, commit, SHA-256), updated through a PR. The Store builds with `dotnet` only: it needs a build already made. See the [integration plan](integration-plan.md), section 3. Benoit, 2026-11-13. |
+| 14 | A window coming to the front reloads its iframe | **Fix Kazo OS**: windows keep a stable order in the page (their opening order), stacking staying in `z-index`, with an ADR, in a separate thread of `Kazo-ca/Os`. Kazo Word will require the OS version that holds the fix. Benoit, 2026-11-13. |
+| 15 | The `.wasm` is 61 MB, not 13 MB | **Keep decision 13**: the build stays in this repository, about 22 MB of history per WordCraft upgrade. Benoit, 2026-11-13. |
 
 ## The integration
 
@@ -88,8 +90,8 @@ Kazo OS window (Blazor, C#)  ⇄  proxy (iframe page)  ⇄  WordCraft (.wasm, ca
   at `_content/<assembly>/` and `.wasm` goes out as `application/wasm`, but the
   service worker of the published OS answers a navigation (loading the iframe
   page) with the OS `index.html`. In development the page is served. Size is not
-  a concern: about 13 MB of wasm (5 MB compressed) for limits of 64 MiB
-  compressed and 128 MiB extracted.
+  a concern: measured in work item 1, the package is 22.9 MB (61.3 MB extracted,
+  61 MB of it wasm) for limits of 64 MiB compressed and 128 MiB extracted.
 - **The iframe** carries `allow="fullscreen; clipboard-read; clipboard-write"`.
 
 ## Work items
@@ -168,8 +170,9 @@ save it, reopen it; Save As; two windows at once.
   handled in the Kazo window in work item 2.
 - **Spelling in English only** in the web version: accepted for v1
   (decision 12).
-- **Web build size**: about 13 MB of wasm (5 MB compressed) according to
-  upstream; measured in work item 1.
+- **Web build size**: upstream announced about 13 MB of wasm; measured in
+  work item 1: 61 MB of wasm, a 22.9 MB package, under the Store limits (decision
+  15).
 - **Alpha and fast pace** (about one release a week): pinned version, upgrades
   deliberate and tested.
 - **Settings outside Kazo files** (`localStorage`, IndexedDB), shared by the
@@ -186,12 +189,12 @@ save it, reopen it; Save As; two windows at once.
 | Work item | Branch | Depends on | State |
 | --- | --- | --- | --- |
 | Plan | `docs/word-plan` | nothing | Merged (PR [#1](https://github.com/Kazo-ca/Os-App-Word/pull/1)) |
-| Check of the plan | `docs/word-plan-verification` | plan | PR [#2](https://github.com/Kazo-ca/Os-App-Word/pull/2) |
-| Detailed integration plan | `docs/word-plan-verification` | check | PR [#2](https://github.com/Kazo-ca/Os-App-Word/pull/2) |
-| Kazo OS: iframe page of an installed app | `fix/installed-app-iframe-page` in `Kazo-ca/Os` | decision 10 | PR [Os#451](https://github.com/Kazo-ca/Os/pull/451) (ADR 0243), to merge. Kazo Word will require the first OS version published after 3.3.0. |
-| 1. Solution and iframe | `word/1-solution` | plan | Waiting for Benoit's go |
-| 2. Open and save | `word/2-open-save` | 1 | To do |
-| 3. Full proxy | `word/3-proxy` | 1 | To do |
-| 4. Build from source | `word/4-build-from-source` | 1, forks created | To do |
-| 5. Store | `word/5-store` | 2, 3, 4 | To do |
+| Check of the plan | `docs/word-plan-verification` | plan | Merged (PR [#2](https://github.com/Kazo-ca/Os-App-Word/pull/2)) |
+| Detailed integration plan | `docs/word-plan-verification` | check | Merged (PR [#2](https://github.com/Kazo-ca/Os-App-Word/pull/2)) |
+| Kazo OS: iframe page of an installed app | `fix/installed-app-iframe-page` in `Kazo-ca/Os` | decision 10 | Done: PR [Os#451](https://github.com/Kazo-ca/Os/pull/451) (ADR 0243), and the stable window order PR [Os#452](https://github.com/Kazo-ca/Os/pull/452) (ADR 0244), released in Kazo OS 3.3.1; with 128 MiB per file (ADR 0245, decision 17), Kazo OS 3.3.2 is the minimum version of Kazo Word. |
+| 1. Solution and iframe | `word/1-solution` | plan | Done on 2026-11-13 (result in the [integration plan](integration-plan.md#work-item-1-solution-and-iframe-word1-solution)). The document survives on Kazo OS 3.3.1; Kazo Word installs and runs in the published OS 3.3.2 (decision 17). |
+| 2. Open and save | `word/2-open-save` | 1 | Done 2026-11-13 (result in the [integration plan](integration-plan.md#work-item-2-open-and-save-word2-open-save)), PR to `word/base`. |
+| 3. Full proxy | `word/3-proxy` | 1 | Done 2026-11-13 (result in the [integration plan](integration-plan.md)), PR [#7](https://github.com/Kazo-ca/Os-App-Word/pull/7) merged into `word/base`. |
+| 4. Build from source | `word/4-build-from-source` | 1, forks created | Done 2026-11-13 (result in the [integration plan](integration-plan.md#work-item-4-build-from-source-word4-build-from-source)), PR to `word/base`. |
+| 5. Store | `word/5-store` | 2, 3, 4 | Listing, notices and installed-app journey done 2026-11-13 (result in the [integration plan](integration-plan.md#work-item-5-store-word5-store)); then tag `v0.1.0` and catalog PR after `word/base` reaches `main`. |
 | Upstream track | fork of `storytold/craft-libs` | nothing | To do |

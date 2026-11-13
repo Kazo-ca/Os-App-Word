@@ -36,7 +36,7 @@ découpage en chantiers sont confirmés par le code. Sept points changent, dont 
 | Commandes pour le C# (`window.wordcraft`) | `apps/wordcraft-web/src/api.rs`, `docs/control-protocol.md` | Confirmé. `ui.theme` et `ui.language` existent déjà : le mode sombre et la langue de l'OS se règlent sans rien demander en amont. `ui.inspect` donne la liste des documents ouverts avec leur état « modifié ». |
 | Le proxy peut reprendre les raccourcis de l'OS | `crates/eframe/src/web/events.rs` du fork d'egui | Confirmé. WordCraft écoute les touches sur le canvas : un écouteur en phase de capture sur la page de l'iframe passe avant lui. |
 | Le proxy peut intercepter le sélecteur de fichiers | `src/backend/wasm.rs` de `rfd` 0.17.2 | Confirmé. `rfd` crée un champ de fichier dans un bloc `rfd-overlay`, écoute `change` et `cancel`, puis appelle `click()`. Un seul écouteur de clic en capture suffit. |
-| Taille du paquet | `packaging/web/README.md` | Environ 13 Mo de wasm, 5 Mo compressés : loin des limites de 64 Mio et 128 Mio. Pas d'ADR à prévoir. |
+| Taille du paquet | `packaging/web/README.md` | Environ 13 Mo de wasm, 5 Mo compressés : loin des limites de 64 Mio et 128 Mio. Pas d'ADR à prévoir. **Corrigé au chantier 1** : le `.wasm` de 0.18.1 fait 61 Mo et le paquet 22,9 Mo (61,3 Mo décompressé), toujours sous les limites. |
 | En-têtes d'isolation | `service-worker.published.js` de Kazo OS | Le service worker ajoute déjà COOP, COEP et CORP, ce que demande la note d'hébergement de WordCraft. |
 | Côté Kazo OS | SDK 3.3.0 | Dialogues ouvrir et enregistrer, associations de fichiers, `IWindowCloseGuard`, nom affiché de l'utilisateur, plusieurs fenêtres par app : tout existe. |
 

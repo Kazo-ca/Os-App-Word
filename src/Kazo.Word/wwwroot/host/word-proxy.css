@@ -1,0 +1,36 @@
+/*
+ * The iframe page: WordCraft's canvas fills it. The Kazo Word window draws its own loading and
+ * error screens over the iframe, so WordCraft's loading element stays empty; WordCraft writes its
+ * start error there, which the window also shows.
+ */
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #1b2233;
+}
+
+#wordcraft_canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    outline: none;
+}
+
+#wordcraft_loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    color: #c9d6ee;
+    font: 14px system-ui, sans-serif;
+    text-align: center;
+    pointer-events: none;
+}

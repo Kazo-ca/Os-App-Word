@@ -1,0 +1,168 @@
+# Compiles WordCraft from the external/wordcraft submodule (our fork, decision 9) and proposes the
+# result as the new src/Kazo.Word/wwwroot/wordcraft/ (decision 13): work item 4 of
+# doc/en/integration-plan.md. Moving to another WordCraft version = move the submodule to a commit
+# of the fork, merge that, then run this workflow on the branch from the Actions tab.
+#
+# - Run by hand (workflow_dispatch): build, commit the build on a new branch
+#   wordcraft/build-<version>-<commit>, run the whole CI on that branch (ci.yml, called here
+#   because a push made with the workflow token starts no workflow), then open a PR to the branch
+#   the workflow ran on.
+# - On a PR that touches the build (submodule, scripts, this file): build only, so a submodule
+#   move or a script change is known to compile before it is merged. Nothing is pushed.
+name: Build WordCraft
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - .gitmodules
+      - external/wordcraft
+      - tools/build-wordcraft.sh
+      - tools/vendor-wordcraft.sh
+      - .github/workflows/build-wordcraft.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: "build-wordcraft-${{ github.ref }}"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    permissions:
+      contents: write
+    outputs:
+      branch: ${{ steps.push.outputs.branch }}
+      version: ${{ steps.push.outputs.version }}
+    env:
+      CARGO_TERM_COLOR: always
+      CARGO_INCREMENTAL: 0
+      # WordCraft's release workflow (craft-common-actions, install-trunk) pins this Trunk.
+      TRUNK_VERSION: "0.21.14"
+      TRUNK_SHA256: f2b4680cd239693a646a2795e4633c625328d7b2a044fbe749fa3a2fe9e7036b
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      # Only the WordCraft submodule: the build does not need the Kazo OS one.
+      - name: Fetch the WordCraft submodule
+        run: git submodule update --init --depth 1 external/wordcraft
+
+      - name: Read the revisions WordCraft pins
+        id: pins
+        run: |
+          echo "i18n=$(tr -d '[:space:]' < external/wordcraft/craft-i18n.rev)" >> "$GITHUB_OUTPUT"
+          echo "fonts=$(sed -n 's/^ *craft-fonts-ref: *\([0-9a-f]\{40\}\).*/\1/p' external/wordcraft/.github/workflows/release.yml | head -n 1)" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout craft-i18n (spelling word lists, hyphenation patterns)
+        uses: actions/checkout@v6
+        with:
+          repository: storytold/craft-i18n
+          ref: ${{ steps.pins.outputs.i18n }}
+          path: .build/craft-i18n
+          persist-credentials: false
+
+      - name: Checkout craft-fonts
+        uses: actions/checkout@v6
+        with:
+          repository: storytold/craft-fonts
+          ref: ${{ steps.pins.outputs.fonts }}
+          path: .build/craft-fonts
+          persist-credentials: false
+
+      - name: Rust stable and the wasm32 target
+        run: |
+          rustup toolchain install stable --profile minimal --target wasm32-unknown-unknown
+          rustup default stable
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            external/wordcraft/target
+          key: wordcraft-web-${{ hashFiles('external/wordcraft/Cargo.lock') }}
+          restore-keys: wordcraft-web-
+
+      - name: Install Trunk (SHA-256 checked)
+        run: |
+          url="https://github.com/trunk-rs/trunk/releases/download/v${TRUNK_VERSION}/trunk-x86_64-unknown-linux-gnu.tar.gz"
+          curl --proto '=https' --fail --location --silent --show-error -o "$RUNNER_TEMP/trunk.tar.gz" "$url"
+          echo "$TRUNK_SHA256  $RUNNER_TEMP/trunk.tar.gz" | sha256sum -c -
+          tar -xz -C "$HOME/.cargo/bin" -f "$RUNNER_TEMP/trunk.tar.gz" trunk
+          trunk --version
+
+      - name: Build and vendor
+        env:
+          CRAFT_I18N_DIR: ${{ github.workspace }}/.build/craft-i18n
+          CRAFT_FONTS_DIR: ${{ github.workspace }}/.build/craft-fonts
+        run: tools/build-wordcraft.sh
+
+      # Decision 8 (a shared library) is taken on these numbers.
+      - name: Sizes
+        run: |
+          dir=src/Kazo.Word/wwwroot/wordcraft
+          wasm="$dir/$(jq -r .wasm "$dir/wordcraft.json")"
+          {
+            echo "### WordCraft build"
+            echo
+            echo '```'
+            jq .source "$dir/wordcraft.json"
+            echo '```'
+            echo
+            echo "| File | Bytes | gzip -9 |"
+            echo "| --- | ---: | ---: |"
+            for f in "$wasm" "$dir/$(jq -r .glue "$dir/wordcraft.json")"; do
+              echo "| $(basename "$f") | $(stat -c %s "$f") | $(gzip -9c "$f" | wc -c) |"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Commit the build on a new branch
+        id: push
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          version="$(jq -r .version src/Kazo.Word/wwwroot/wordcraft/wordcraft.json)"
+          commit="$(jq -r .source.commit src/Kazo.Word/wwwroot/wordcraft/wordcraft.json)"
+          branch="wordcraft/build-${version}-${commit:0:12}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git add src/Kazo.Word/wwwroot/wordcraft
+          if git diff --cached --quiet; then
+            echo "::notice::The committed build already matches this one; nothing to propose."
+            exit 0
+          fi
+          git commit -m "build: WordCraft ${version} compiled from ${commit}"
+          git push origin "$branch"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+  test:
+    needs: build
+    if: needs.build.outputs.branch != ''
+    uses: ./.github/workflows/ci.yml
+    with:
+      ref: ${{ needs.build.outputs.branch }}
+
+  pull-request:
+    needs: [build, test]
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Open the PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ needs.build.outputs.branch }}
+          VERSION: ${{ needs.build.outputs.version }}
+          BASE: ${{ github.ref_name }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          body="WordCraft ${VERSION} compiled from the external/wordcraft submodule by the Build WordCraft workflow. The CI ran on this branch inside that workflow: ${RUN_URL}"
+          gh pr create --repo "$GITHUB_REPOSITORY" --base "$BASE" --head "$BRANCH" \
+            --title "build: WordCraft ${VERSION} compiled from source" --body "$body" \
+            || echo "::warning::Could not open the PR (is \"Allow GitHub Actions to create pull requests\" on?). Open it by hand: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/compare/${BASE}...${BRANCH}"

@@ -1,0 +1,36 @@
+{
+  "version": "0.18.1",
+  "source": {
+    "kind": "source-build",
+    "repository": "https://github.com/Kazo-ca/wordcraft.git",
+    "commit": "079f478bd85df7bcc567e3bafa7d7219096f9c3c",
+    "craftI18n": "1e515422afdda2f317af430c1f9d68a5f83935b4",
+    "craftFonts": "b076417b5880bd4154bd22f00695b1d28c6bea83",
+    "rustc": "rustc 1.100.0 (0ef1bc386 2026-11-09)",
+    "trunk": "0.21.14"
+  },
+  "glue": "wordcraft-web-ec20780d34282cdf.js",
+  "wasm": "wordcraft-web-ec20780d34282cdf_bg.wasm",
+  "files": [
+    { "path": "ATTRIBUTION.md", "size": 16249, "sha256": "3fc09b7189d078901db77a477bc2dc2007d9a139d59057c67cd5d46e8491d435" },
+    { "path": "LICENSE-APACHE", "size": 10174, "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594" },
+    { "path": "LICENSE-MIT", "size": 1101, "sha256": "fc257de83c44ae49e4aad1cf777b886794be3ac9c8d00c010ef55935d5bbeba5" },
+    { "path": "NOTICE", "size": 12891, "sha256": "8ff59a56c883fd708ed041c7a0ce4e16bb040e03027d94677d324ce711ebba2d" },
+    { "path": "OFL-biz-ud-mincho.txt", "size": 4408, "sha256": "ef0ed524b3bd012f37015e986809eed6f67905456ebfc1ebd7fcc2765282ee01" },
+    { "path": "OFL-biz-ud-pgothic.txt", "size": 4408, "sha256": "e753d7155d53c747d037a445e584c8ecfca6dd79846db610417e282a736b28bc" },
+    { "path": "OFL-lxgw-wenkai-lite.txt", "size": 5176, "sha256": "0333a85fe077b6849f8e417acc44e8bd879442ceb681e271acf93e2d57fd4e2e" },
+    { "path": "OFL-nanum-gothic.txt", "size": 4534, "sha256": "eeacf16032901d0ed0456876ec77b8f0fda6b3fecec7d972f8543eb602e6c30f" },
+    { "path": "OFL-noto-sans-arabic.txt", "size": 4382, "sha256": "07fc70bfeb985cc1a87a8587d0a0c80bab11c86c9dc3fd95b6f0cb332f983e96" },
+    { "path": "OFL-noto-sans-cjk-sc.txt", "size": 4301, "sha256": "6a73f9541c2de74158c0e7cf6b0a58ef774f5a780bf191f2d7ec9cc53efe2bf2" },
+    { "path": "OFL-noto-sans-devanagari.txt", "size": 4386, "sha256": "a216f6f8d85c7228093e0ee5e258d9d377e6671f68acb4db1930b29583d0f331" },
+    { "path": "OFL-noto-sans-georgian.txt", "size": 4384, "sha256": "8c02263c5d73d40544f9ed91e30c4e947407057a3cc430d7b786189aeceff6df" },
+    { "path": "OFL-noto-sans-hebrew.txt", "size": 4382, "sha256": "9b9fe028b5ba74d231659a1bbaf0ed09b11e759d1ca6a070999e16d151616b47" },
+    { "path": "OFL-noto-sans-symbols-2.txt", "size": 4383, "sha256": "b118dd41337806a5d4797052c77caf3bd096aed783e5eb21b4d11154351e1ac0" },
+    { "path": "OFL-noto-sans-symbols.txt", "size": 4383, "sha256": "b118dd41337806a5d4797052c77caf3bd096aed783e5eb21b4d11154351e1ac0" },
+    { "path": "OFL-noto-sans-thai.txt", "size": 4380, "sha256": "2e98fd23a52d253db8612cd5942c8f2ff4111b21d2367050fdca91d8ccc374a0" },
+    { "path": "OFL-shippori-mincho.txt", "size": 4399, "sha256": "41fba056279be5f45ff9a99e44b7b53897b42732f5806d8e666e0ab49ac6bd38" },
+    { "path": "snippets/eframe-d31a8450ea12dfc1/inline0.js", "size": 280, "sha256": "22a98f9d0c5a0532d291bdc9a3050439420b3d11143b4568fcfd3c66fff36995" },
+    { "path": "wordcraft-web-ec20780d34282cdf.js", "size": 181839, "sha256": "3f331b08938b9224758c1b797e5497cb28b290843193814b1b3c5d20cbf72ea6" },
+    { "path": "wordcraft-web-ec20780d34282cdf_bg.wasm", "size": 60242518, "sha256": "aa6f58cf2310ef505c710e1bcea1696fdd9055b5575567b8124065a9b97d7d4c" }
+  ]
+}

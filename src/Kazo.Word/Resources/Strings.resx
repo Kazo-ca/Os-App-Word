@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="EditorLabel" xml:space="preserve">
+    <value>Word processor</value>
+  </data>
+  <data name="FailedTitle" xml:space="preserve">
+    <value>WordCraft could not start</value>
+  </data>
+  <data name="FailedHint" xml:space="preserve">
+    <value>WordCraft needs WebGPU or WebGL 2 in this browser.</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Starting WordCraft…</value>
+  </data>
+  <data name="LoadingHint" xml:space="preserve">
+    <value>The first start downloads about 23 MB.</value>
+  </data>
+  <data name="Retry" xml:space="preserve">
+    <value>Retry</value>
+  </data>
+  <data name="TimedOut" xml:space="preserve">
+    <value>WordCraft did not answer within {0} seconds.</value>
+  </data>
+  <data name="PickDocumentTitle" xml:space="preserve">
+    <value>Open a document</value>
+  </data>
+  <data name="PickPictureTitle" xml:space="preserve">
+    <value>Insert a picture</value>
+  </data>
+  <data name="PickFontsTitle" xml:space="preserve">
+    <value>Add fonts</value>
+  </data>
+  <data name="PickRecipientsTitle" xml:space="preserve">
+    <value>Choose the recipients list</value>
+  </data>
+  <data name="PickOtherTitle" xml:space="preserve">
+    <value>Choose a file</value>
+  </data>
+  <data name="DocumentsFilter" xml:space="preserve">
+    <value>Documents</value>
+  </data>
+  <data name="PicturesFilter" xml:space="preserve">
+    <value>Pictures</value>
+  </data>
+  <data name="FontsFilter" xml:space="preserve">
+    <value>Fonts</value>
+  </data>
+  <data name="RecipientsFilter" xml:space="preserve">
+    <value>Recipient lists</value>
+  </data>
+  <data name="AllFiles" xml:space="preserve">
+    <value>All files</value>
+  </data>
+  <data name="ProblemTitle" xml:space="preserve">
+    <value>Kazo Word</value>
+  </data>
+  <data name="ReadFailed" xml:space="preserve">
+    <value>{0} could not be read: {1}</value>
+  </data>
+  <data name="NewWindowFailed" xml:space="preserve">
+    <value>A new Kazo Word window could not be opened: {0}</value>
+  </data>
+  <data name="Untitled" xml:space="preserve">
+    <value>Untitled</value>
+  </data>
+  <data name="OpenTitle" xml:space="preserve">
+    <value>Open a document</value>
+  </data>
+  <data name="SaveTitle" xml:space="preserve">
+    <value>Save the document</value>
+  </data>
+  <data name="SaveCopyTitle" xml:space="preserve">
+    <value>Save a copy</value>
+  </data>
+  <data name="FilterDocuments" xml:space="preserve">
+    <value>Documents</value>
+  </data>
+  <data name="FilterAll" xml:space="preserve">
+    <value>All files</value>
+  </data>
+  <data name="FilterFormat" xml:space="preserve">
+    <value>{0} file</value>
+  </data>
+  <data name="OpenFailed" xml:space="preserve">
+    <value>Could not open {0}: {1}</value>
+  </data>
+  <data name="NotConnected" xml:space="preserve">
+    <value>WordCraft is not running.</value>
+  </data>
+  <data name="SaveFailed" xml:space="preserve">
+    <value>{0} was not saved: {1}. The document stays modified; the next save asks where to write it.</value>
+  </data>
+  <data name="SaveCancelled" xml:space="preserve">
+    <value>{0} was not saved. The document stays modified.</value>
+  </data>
+  <data name="CopySaved" xml:space="preserve">
+    <value>Copy saved: {0}.</value>
+  </data>
+  <data name="Dismiss" xml:space="preserve">
+    <value>Dismiss</value>
+  </data>
+  <data name="CloseTitle" xml:space="preserve">
+    <value>Unsaved changes</value>
+  </data>
+  <data name="CloseUnsaved" xml:space="preserve">
+    <value>Save the changes to {0} before closing? Yes saves, No closes without saving.</value>
+  </data>
+  <data name="CloseUnanswered" xml:space="preserve">
+    <value>WordCraft does not answer, so {0} cannot be saved. Close without saving?</value>
+  </data>
+</root>

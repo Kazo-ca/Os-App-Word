@@ -16,6 +16,11 @@ qui est livré, les tests et le critère de fin. Chaque fil de chantier part de 
 | 11 | En amont, on se joint aux issues existantes ; une issue neuve seulement pour ce qui manque. Claude prépare les textes, Benoit les publie. | Benoit, 2026-11-13 |
 | 12 | Le correcteur orthographique en anglais seulement est accepté pour la v1, noté comme limite connue. | Benoit, 2026-11-13 |
 | 13 | Le build compilé de WordCraft vit dans ce dépôt, sous `wwwroot/wordcraft/` (section 3). | Benoit, 2026-11-13 |
+| 14 | Kazo OS garde un ordre stable des fenêtres dans la page ; une fenêtre qui passe devant ne recharge plus son iframe (correction dans `Kazo-ca/Os`). | Benoit, 2026-11-13 |
+| 15 | Le `.wasm` réel fait 61 Mo : la décision 13 reste. | Benoit, 2026-11-13 |
+| 16 | Pas de menu Kazo pour la v1 : l'onglet Fichier de WordCraft suffit (le SDK ne donne pas encore de menu de fenêtre). | Benoit, 2026-11-13 |
+| 17 | Kazo OS relève sa taille maximale de fichier (16 Mio aujourd'hui, ADR 0094) pour que le `.wasm` de 60 Mo s'installe : ADR 0245 de Kazo OS, 128 Mio par fichier, publiée dans Kazo OS 3.3.2. | Benoit, 2026-11-13 |
+| 18 | La première version du Store reste **0.1.0** (la version du manifeste) : le numéro dit que c'est un premier essai, WordCraft étant en alpha. | Benoit, 2026-11-13 |
 
 ## 2. Les trois parties
 
@@ -50,11 +55,12 @@ avec `dotnet build -t:KazoOsPack` seulement, et ne récupère que le sous-module
 fork de WordCraft. Le Store ne peut donc pas compiler WordCraft : il lui faut un build
 déjà fait.
 
-- **A. Dans ce dépôt ✨** : `wwwroot/wordcraft/` contient le `.js`, le `.wasm` (environ
-  13 Mo) et les licences, avec un fichier de provenance (version, commit, SHA-256). Un script
+- **A. Dans ce dépôt ✨** : `wwwroot/wordcraft/` contient le `.js`, le `.wasm` (61 Mo,
+  mesuré au chantier 1 ; le plan disait environ 13 Mo) et les licences, avec un fichier de provenance (version, commit, SHA-256). Un script
   les met à jour : depuis le zip officiel (chantier 1), puis depuis notre compilation
-  (chantier 4), par une PR. C'est ce que fait Webamp. Le dépôt grossit d'environ 5 Mo à chaque
-  montée de version de WordCraft.
+  (chantier 4), par une PR. C'est ce que fait Webamp. Le dépôt grossit d'environ 22 Mo (le `.wasm` compressé)
+  à chaque montée de version de WordCraft, et GitHub avertit au push d'un fichier de plus de
+  50 Mo (il refuse au-delà de 100 Mo).
 - **B. Téléchargé pendant la compilation** : une cible MSBuild télécharge le zip épinglé et
   vérifie son SHA-256. Le dépôt reste léger et le Store n'a rien à changer (son poste de
   compilation a le réseau). Mais le contenu du paquet n'est plus tout entier dans le commit
@@ -68,20 +74,28 @@ déjà fait.
 ## 4. Fichiers
 
 ```
-Kazo.Word.sln
+Kazo.Word.slnx
 src/Kazo.Word/                      l'app (assembly Kazo.Word)
   WordApp.cs                        [AppManifest] : ca.kazo.word, formats, capacités, fenêtre
   WordWindow.razor(.cs)(.css)       la fenêtre : iframe, chargement, erreur, garde de fermeture
   Hosting/WordFrame.cs              enveloppe C# de js/word-host.js (appels et événements)
   Hosting/FrameMessages.cs          les types des messages (section 5)
+  Hosting/FrameStartup.cs           chargement, WordCraft ou erreur, délai de 60 s, « Réessayer »
   Documents/DocumentSession.cs      état d'une fenêtre : documents liés, « modifié », décisions
   Documents/SaveDecision.cs         réécrire, demander un chemin, copie exportée
   Documents/DocumentFormats.cs      extensions, types, filtres des dialogues
   Opening/OpenRequest.cs            fichier demandé au lancement ou par intention
-  Pickers/PickPurpose.cs            document, image, polices, destinataires (d'après accept)
+  WordWindow.Proxy.cs               sélecteur, touches réservées, réglages, thème et langue
+  Hosting/ReservedKeys.cs           raccourcis de l'OS et Ctrl+N relayés par le proxy
+  Hosting/WordCraftLanguage.cs      langue de WordCraft d'après la culture Kazo
+  Pickers/PickRequest.cs            document, image, polices, destinataires (d'après accept)
+  Settings/WebStorageFile.cs        ~/.config/ca.kazo.word/web-storage.json
   Strings.cs, Resources/*.resx      textes fr et en, localization/fr.json
   wwwroot/host/index.html           page de l'iframe : canvas data-host="page", chargement
   wwwroot/host/word-proxy.js        le proxy
+  wwwroot/host/file-picker.js       attrape le champ de fichier de rfd
+  wwwroot/host/reserved-keys.js     relaie les raccourcis réservés
+  wwwroot/host/settings-store.js    localStorage en mémoire renvoyé à la fenêtre
   wwwroot/host/word-proxy.css
   wwwroot/js/word-host.js           côté OS : iframe et MessagePort
   wwwroot/wordcraft/                build de WordCraft, non modifié à la main
@@ -91,10 +105,11 @@ src/Kazo.Word/                      l'app (assembly Kazo.Word)
 src/Kazo.Word.Os/                   hôte de débogage (du modèle)
 tests/Kazo.Word.Tests/              xUnit
 tests/proxy/                        node --test, avec un faux WordCraft
-tests/Kazo.Word.E2E/                Playwright, dans l'hôte de débogage
+tests/e2e/                          Playwright (node --test), dans l'hôte de débogage
 tools/vendor-wordcraft.sh           zip épinglé ou dossier compilé → wwwroot/wordcraft/
 external/KazoOs                     sous-module (du modèle)
-external/wordcraft                  sous-module du fork (chantier 4 seulement)
+external/wordcraft                  sous-module du fork, utile seulement pour compiler WordCraft
+tools/build-wordcraft.sh            compile external/wordcraft, puis vendor-wordcraft.sh --dir
 THIRD-PARTY-NOTICES.md              chantier 5
 ```
 
@@ -109,7 +124,7 @@ Messages sur le `MessagePort`, tous de la forme `{ type, id?, ... }`. Les octets
 
 | Message | Sens | Contenu | Rôle |
 | --- | --- | --- | --- |
-| `init` | fenêtre → proxy | `author`, `theme`, `language`, `reservedKeys` | Premier message, avec le port. |
+| `init` | fenêtre → proxy | `author`, `language`, `reservedKeys`, `settings` | Premier message, avec le port. WordCraft ne démarre qu'après. |
 | `ready` | proxy → fenêtre | `appVersion` | WordCraft écoute. |
 | `failed` | proxy → fenêtre | `error` | WordCraft n'a pas démarré (pas de WebGPU ni de WebGL2, wasm introuvable). |
 | `open` | fenêtre → proxy | `name`, `bytes` | Ouvre un document. |
@@ -117,9 +132,10 @@ Messages sur le `MessagePort`, tous de la forme `{ type, id?, ... }`. Les octets
 | `dirty` | proxy → fenêtre | `dirty` | Le document affiché a des modifications. |
 | `pick` | proxy → fenêtre | `id`, `accept`, `multiple` | WordCraft ouvre le sélecteur de fichiers. |
 | `picked` | fenêtre → proxy | `id`, `files` ou `cancelled` | Réponse au sélecteur. |
-| `command` | fenêtre → proxy | `id`, `method`, `params` | Appelle `window.wordcraft.request`. |
+| `command` | fenêtre → proxy | `id`, `method`, `params`, `timeoutMs` | Appelle `window.wordcraft.request` (10 s par défaut). Le thème et la langue passent par là (`ui.theme`, `ui.language`). |
 | `result` | proxy → fenêtre | `id`, `ok`, `value` ou `error` | Réponse à `command`. |
-| `key` | proxy → fenêtre | touche et modificateurs | Un raccourci de l'OS tapé dans l'iframe. |
+| `key` | proxy → fenêtre | `phase`, `target`, touche et modificateurs | Un raccourci réservé tapé dans l'iframe : `os` est rejoué sur l'élément iframe pour l'OS, `app` est traité par la fenêtre (`Ctrl+N`). |
+| `setting` | proxy → fenêtre | `key`, `value` | WordCraft a écrit dans son `localStorage` ; la fenêtre l'écrit dans `~/.config/ca.kazo.word/web-storage.json`. |
 | `focus` | proxy → fenêtre | rien | Un clic dans l'iframe : la fenêtre Kazo passe devant. |
 
 Le proxy traduit `open`, `save`, `dirty`, `ready`, `failed` de et vers les événements
@@ -185,7 +201,9 @@ Aucun chantier ne commence sans le feu vert de Benoit.
 
 | Quoi | Qui | État |
 | --- | --- | --- |
-| Correction du service worker de Kazo OS (décision 10) | Fil « Servir la page iframe des apps installées » | PR [Os#451](https://github.com/Kazo-ca/Os/pull/451) (ADR 0243) prête le 2026-11-13, à fusionner. Rien à changer côté app. Ne bloque que le chantier 5. |
+| Ordre stable des fenêtres dans la page (décision 14) | Fil « Garder l'ordre des fenêtres stable » | Fait : PR [Os#452](https://github.com/Kazo-ca/Os/pull/452) (ADR 0244), publiée dans Kazo OS 3.3.1 le 2026-11-13. |
+| Correction du service worker de Kazo OS (décision 10) | Fil « Servir la page iframe des apps installées » | Fait : PR [Os#451](https://github.com/Kazo-ca/Os/pull/451) (ADR 0243), publiée dans Kazo OS 3.3.1 le 2026-11-13. Kazo Word demande Kazo OS 3.3.1 ou plus. |
+| Un fichier de plus de 16 Mio dans Kazo OS (décision 17) | Fil « Relever la taille maximale de fichier » | Fait : 128 Mio par fichier, PR [Os#455](https://github.com/Kazo-ca/Os/pull/455) (ADR 0245), publiée dans Kazo OS 3.3.2 le 2026-11-13. Kazo Word demande Kazo OS 3.3.2 ou plus. |
 | Forks `Kazo-ca/wordcraft`, `Kazo-ca/craft-libs`, `Kazo-ca/gridcraft` (décision 9) | Benoit, par le coordinateur | Avant le chantier 4. |
 
 ### Chantier 1 : solution et iframe (`word/1-solution`)
@@ -205,6 +223,40 @@ Un essai qui doit prouver que WordCraft démarre dans une fenêtre Kazo.
   fait passer la fenêtre devant ; la taille du paquet `.kazoapp` est notée dans le plan ; le
   résultat dans un OS publié est noté (attendu : en échec jusqu'à la décision 10).
 
+**Résultat (2026-11-13).**
+
+- WordCraft s'affiche en 4 secondes environ dans l'hôte de débogage (Release, Kazo OS 3.3.0) et
+  le texte tapé arrive dans le document, avec le rendu WebGPU (`BrowserWebGpu`) et avec le
+  rendu WebGL 2 (argument de lancement `--webgl`, qui ajoute `?webgl` à l'iframe). WordCraft
+  passe de lui-même à WebGL 2 quand le navigateur n'a pas d'adaptateur WebGPU.
+- Deux fenêtres tournent en même temps, chacune avec son document ; un clic dans WordCraft fait
+  passer sa fenêtre devant.
+- En mode hôte, WordCraft s'ouvre sur son écran d'accueil (nouveau document, modèles) : le
+  chantier 2 envoie le fichier demandé ou crée un document vide.
+- Paquet `.kazoapp` : 22,9 Mo, 61,3 Mo décompressé, 31 fichiers (limites : 64 Mio, 128 Mio,
+  2000 fichiers). Le `.wasm` seul fait 61 Mo.
+- Mémoire (Chromium sans écran, rendu logiciel, écran d'accueil) : environ 130 Mo pour la
+  première fenêtre, puis environ 25 Mo par fenêtre de plus (quatre fenêtres : 233 Mo de plus
+  que sans Kazo Word). Le module compilé est partagé ; un gros document coûtera plus.
+- **Trouvé** : Kazo OS range les fenêtres dans la page selon leur ordre d'empilement. Quand une
+  fenêtre passe devant, son élément est déplacé, et un iframe déplacé se recharge : WordCraft
+  repart de zéro et le document est perdu (décision 14, section 9). `word-host.js` reconnecte
+  la page rechargée, mais le document est perdu.
+- Kazo OS 3.3.1 (2026-11-13) corrige les deux : un document survit quand sa fenêtre passe devant
+  puis derrière (parcours Playwright, en échec sur 3.3.0, réussi sur 3.3.1), et le service worker
+  publié sert la page de l'iframe. Le sous-module est passé sur `v3.3.1`.
+  L'OS fait aussi passer devant une fenêtre qui reçoit le focus par un clic dans son iframe ; le
+  `pointerdown` que `word-host.js` rejoue sur l'iframe reste, il ne fait que le même effet.
+- **OS publié (3.3.1)** : `sudo kazopkg install Kazo-ca/Os-App-Word` lit le paquet puis échoue
+  sur le `.wasm` : `FileTooLarge`. Le système de fichiers de Kazo OS refuse tout fichier de plus
+  de 16 Mio (ADR 0094), et le `.wasm` fait 60 Mo (22 Mo en gzip). Décision 17 : Kazo OS relève sa limite.
+- **OS publié (3.3.2, 2026-11-13)** : avec 128 Mio par fichier (ADR 0245, décision 17),
+  `sudo kazopkg install Kazo-ca/Os-App-Word` installe le paquet (22,8 Mo) en 16 s ; Kazo Word
+  s'ouvre depuis le menu, WordCraft tourne au bout de 8 s dans la page servie par le service
+  worker publié (pas de second Kazo OS), et le texte tapé arrive dans le document, en WebGPU et en
+  WebGL 2 (`launch ca.kazo.word --webgl`). Le sous-module est sur `v3.3.2`, la version minimale
+  de l'OS.
+
 ### Chantier 2 : ouvrir et enregistrer (`word/2-open-save`)
 
 - Associations de fichiers et « Ouvrir avec » (formats du plan), `OpenRequest`, intentions.
@@ -216,6 +268,43 @@ Un essai qui doit prouver que WordCraft démarre dans une fenêtre Kazo.
   PDF ; fermer avec des modifications ; deux fenêtres.
 - **Terminé quand** : aucun cas ne perd de modifications sans que l'utilisateur l'ait choisi,
   y compris quand l'écriture échoue.
+
+**Résultat (2026-11-13).**
+
+- Ce que WordCraft 0.18.1 envoie, vérifié dans sa page : un document neuf est nommé d'après ses
+  premiers mots (« Hello.docx ») et son premier enregistrement arrive avec `saveAs` vrai, les
+  suivants avec le même nom et `saveAs` faux ; Enregistrer sous en `.odt` arrive avec `saveAs`
+  vrai ; un PDF, un PNG, du HTML, du Markdown ou du texte arrivent avec `saveAs` faux (des
+  copies). WordCraft efface son état « modifié » dès qu'il a envoyé l'enregistrement.
+- `DocumentSession` lie chaque nom de document de WordCraft à un chemin. Une copie ne change
+  jamais la liaison. Un enregistrement qui n'aboutit pas (dialogue annulé, écriture refusée,
+  toute autre erreur) laisse la fenêtre « modifiée » et le prochain enregistrement de ce
+  document redemande un chemin. Quand l'utilisateur choisit un autre nom de fichier, la fenêtre
+  renomme le document dans WordCraft (`file.rename`) pour que son titre et ses enregistrements
+  suivants portent le nom du fichier.
+- Démarrage : un fichier demandé (argument de lancement) est lu avec `KazoFile` et envoyé par
+  `open` ; sinon un document vide (`file.new`). Dans les deux cas l'écran d'accueil de WordCraft
+  est fermé (`ui.backstage {"value": false}`).
+- Titre : `*nom — Kazo Word`, « Sans titre » avant le premier enregistrement.
+- Fermeture : `ui.inspect` liste les documents ; « Oui » enregistre chacun
+  (`engine.execute` `file.save` avec `doc`) et ne ferme qu'une fois tous écrits ; « Non » ferme ;
+  « Annuler » garde la fenêtre. Si WordCraft ne répond pas, la fenêtre demande seulement s'il faut
+  fermer sans enregistrer.
+- Associations : les dix formats de traitement de texte en `open` et `edit` ; `.md`, `.txt`,
+  `.html`, `.htm`, `.tex` en `open` seulement. Capacités : dialogues Ouvrir et Enregistrer,
+  dossier personnel en lecture et écriture, `apps.launch` (ouvrir un fichier dans une autre
+  fenêtre Kazo Word). `.tex` n'a pas d'autre app dans Kazo OS : Kazo Word y devient l'app par
+  défaut de fait.
+- Pour le chantier 3 : `WordWindow.OpenInNewWindowAsync(path)` (sur place si la fenêtre n'a
+  qu'un document vide jamais touché, sinon une nouvelle fenêtre), `ShowOpenDialogAsync()` et
+  `IsUntouchedBlank`.
+- Trouvé : un rappel `[JSInvokable]` ne tourne pas dans le contexte de l'app ; sans
+  `KazoExecutionContext.Enter(AppContext)`, `KazoFile` refuse. Le parcours Playwright l'a montré.
+- Tests : 57 cas xUnit de plus (`DocumentSessionTests`, `DocumentFormatsTests`) ; trois
+  parcours Playwright (`tests/e2e/open-save.e2e.mjs`) : enregistrer un nouveau document, le
+  réenregistrer sans dialogue, le rouvrir avec `xdg-open` dans une deuxième fenêtre ; Enregistrer
+  sous en `.odt` puis une copie PDF ; fermer avec des modifications (Annuler, dialogue annulé,
+  puis Oui). L'échec d'écriture est couvert en xUnit.
 
 ### Chantier 3 : proxy complet (`word/3-proxy`)
 
@@ -231,6 +320,34 @@ Un essai qui doit prouver que WordCraft démarre dans une fenêtre Kazo.
   fichiers Kazo, `Alt+F4` ferme la fenêtre, le thème suit l'OS.
 - **Terminé quand** : aucun dialogue du navigateur ne s'ouvre depuis Kazo Word, et les
   raccourcis de l'OS marchent quand le curseur est dans le document.
+
+**Résultat (2026-11-13).**
+
+- Sélecteur : `host/file-picker.js` attrape le champ de fichier de rfd (clic, ou carte `#rfd-overlay`
+  sans activation) et envoie `pick`. L'usage se déduit des extensions acceptées (document,
+  image, polices, destinataires). La fenêtre montre le dialogue de l'OS, lit les fichiers et
+  répond `picked`. Pour un document, WordCraft entend « annulé » et le fichier s'ouvre par
+  `OpenInNewWindowAsync` du chantier 2 (nouvelle fenêtre, ou sur place pour un document vide intact). L'annulation passe par un `change` sans fichier : l'événement `cancel` fait
+  paniquer WordCraft 0.18.1.
+- Raccourcis : `host/reserved-keys.js` garde les raccourcis par défaut de l'OS (le fichier de
+  raccourcis de l'utilisateur n'est pas lisible par une app) et `Ctrl+N`. `Alt+F4` n'est lié
+  par l'OS qu'en plein écran (verrou du clavier) ; hors plein écran, c'est `Alt+Q`.
+- Thème et langue : la fenêtre envoie `ui.theme` à chaque changement de thème de l'OS et
+  choisit la langue de WordCraft la plus proche de la culture Kazo (`WordCraftLanguage`).
+- Essai des réglages : **il tient**. `localStorage` est remplacé dans l'iframe par une copie
+  en mémoire chargée depuis `~/.config/ca.kazo.word/web-storage.json`, écrite au plus 500 ms après la
+  première écriture non enregistrée. Avec deux fenêtres, la dernière écriture gagne. Les polices ajoutées
+  (IndexedDB) restent partagées par l'origine.
+- Menu de fenêtre : abandonné (décision 16).
+- Les messages du proxy arrivent hors du contexte d'exécution Kazo : chaque gestionnaire qui
+  touche au SDK fait `KazoExecutionContext.Enter`.
+- Limites notées : l'impression passe par le dialogue d'impression du navigateur (exception
+  acceptée) ; « Polices du système » demande la permission du navigateur pour les polices
+  locales ; le copier-coller marche avec le presse-papiers du système, mais un essai a collé
+  en double le texte copié plus tôt (à revoir) ; le relais du focus devient inutile quand
+  Kazo OS amène la fenêtre devant au clic dans son iframe (à revoir à la montée du sous-module).
+- Tests : 31 tests du proxy (`npm test`), 125 tests xUnit avec le chantier 2, 6 parcours Playwright
+  (`tests/e2e/proxy.e2e.mjs`), qui échouent si le sélecteur du navigateur s'ouvre.
 
 ### Chantier 4 : build depuis les sources (`word/4-build-from-source`)
 
@@ -248,6 +365,50 @@ Un essai qui doit prouver que WordCraft démarre dans une fenêtre Kazo.
 - **Terminé quand** : une montée de version de WordCraft se fait en changeant le commit du
   sous-module et en lançant le workflow.
 
+**Résultat (2026-11-13).**
+
+- Sous-module `external/wordcraft` sur le fork `Kazo-ca/wordcraft`, au commit de la release
+  0.18.1 (`079f478b`, « Merge tested main for v0.18.1 »). Ce commit est sur la branche `release`
+  en amont, que le fork n'avait pas copiée : il est gardé dans le fork par la branche
+  `kazo/v0.18.1`, notée dans `.gitmodules`. Une montée de version fait pareil :
+  une branche `kazo/v<version>` du fork depuis le tag amont, puis le sous-module dessus.
+- `tools/build-wordcraft.sh` compile comme la release amont : il lit les révisions de
+  `craft-i18n` (`craft-i18n.rev`) et de `craft-fonts` (`craft-fonts-ref` du workflow amont)
+  dans le sous-module et refuse d'autres checkouts, exige Trunk 0.21.14 et la cible wasm32, lance
+  `packaging/web/package.sh` de WordCraft (licences et licences de polices comprises), avec la
+  date du commit comme date de build, puis `tools/vendor-wordcraft.sh --dir`.
+- `tools/vendor-wordcraft.sh --dir <dossier>` : la source « dossier compilé ». `wordcraft.json`
+  dit alors `"kind": "source-build"`, le dépôt, le commit du sous-module (qui doit être propre),
+  les révisions de `craft-i18n` et `craft-fonts`, `rustc` et `trunk`. Un test xUnit vérifie que
+  ce commit est celui du sous-module dans l'index git : déplacer le sous-module sans recompiler
+  (ou l'inverse) échoue.
+- Workflow `build-wordcraft.yml` : lancé à la main, il compile, pousse le build sur une branche
+  `wordcraft/build-<version>-<commit>`, fait tourner toute la CI sur cette branche (`ci.yml`
+  appelé, puisqu'un push fait avec le jeton du workflow ne lance aucun workflow) puis ouvre la PR.
+  Sur une PR qui touche le sous-module, les scripts ou ce fichier, il compile seulement. GitHub ne
+  propose le bouton « Run workflow » qu'une fois le fichier sur `main` : d'ici là, le build se
+  fait avec le script, et la PR le vérifie. L'ouverture de la PR demande le réglage « Allow GitHub
+  Actions to create and approve pull requests » ; sans lui, le workflow donne le lien pour l'ouvrir.
+- La CI (et les deux workflows de publication) ne récupère plus que le sous-module Kazo OS ;
+  le Store ne récupère toujours que lui.
+- Le build de cette PR, fait avec Rust 1.100.0 : mêmes fichiers que le zip officiel, mêmes
+  licences, même module JavaScript à part les suffixes générés. Le `.wasm` n'est pas identique
+  octet pour octet (version de Rust et crédits rafraîchis par la release amont). Avec un Rust plus
+  ancien (1.97), le module importait quelques fonctions WebGPU et vidéo de plus : le workflow prend le Rust
+  stable du jour, comme la release amont.
+- Tests sur ce build : 125 xUnit, 31 tests du proxy, 12 parcours Playwright. Le parcours
+  « insérer une image depuis les fichiers Kazo » échouait parfois (aussi sur `word/base`) : il
+  importait l'image avant que l'explorateur de fichiers ait sa vue, et l'explorateur ignore alors
+  l'import. Il attend maintenant la première liste du dossier.
+- Mesures pour la décision 8 : `.wasm` 60 242 518 octets (22,2 Mo en gzip -9), module
+  JavaScript 182 Ko. Données incluses dans le `.wasm`, d'après les fichiers sources : traductions
+  de l'interface environ 4,6 Mo (51 langues), données d'orthographe et de césure environ 3,0 Mo,
+  polices environ 1,1 Mo (Noto Sans Arabic et Georgian ; les autres polices ne sont pas dans le
+  build web). Environ 9 Mo de données pourraient donc être chargées à part ; le reste, environ
+  51 Mo, est du code, que deux modules wasm ne partagent pas.
+- Le nom et le logo ArtCraft restent : aucune modification de WordCraft n'est encore livrée.
+- Compilation ici : environ 6 minutes sur 4 cœurs, sans cache.
+
 ### Chantier 5 : Store (`word/5-store`)
 
 - Icône sans logo ArtCraft, fiche fr et en avec « basé sur WordCraft de l'équipe ArtCraft »
@@ -258,6 +419,34 @@ Un essai qui doit prouver que WordCraft démarre dans une fenêtre Kazo.
 - Tag par le workflow « Tag a release », PR au catalogue d'Os-AppMarketPlace (signature
   là-bas seulement), ligne dans `features.md` de Kazo OS.
 - **Terminé quand** : Kazo Word s'installe depuis le Store et ouvre un `.docx` par double-clic.
+
+Résultat (2026-11-13) :
+
+- Icône : `store/icon.png` est l'icône propre de l'app (`wwwroot/icons/app.svg`, une page et un
+  stylo) rendue en 256 × 256 ; elle remplace celle du modèle. Aucune marque ArtCraft nulle part.
+- Fiche : `store/description.{en,fr}.md` et les descriptions courtes créditent « WordCraft de
+  l'équipe ArtCraft » et listent les limites connues (alpha, orthographe anglaise, polices
+  asiatiques, WebGPU ou WebGL 2, taille et mémoire, impression, Kazo OS 3.3.2). Trois captures
+  dans `store/screenshots/`, prises dans l'OS publié par le parcours ci-dessous (modèles de
+  rapport et de lettre de WordCraft).
+- `THIRD-PARTY-NOTICES.md` et `THIRD-PARTY-NOTICES-fr.md` à la racine. Le projet les lie, avec
+  `LICENSE`, dans `wwwroot/legal/` : le paquet les contient à côté des `LICENSE-MIT`,
+  `LICENSE-APACHE`, `NOTICE`, `ATTRIBUTION.md` et `OFL-*.txt` de WordCraft (`LegalFilesTests`
+  vérifie les liens, les fichiers, la version de WordCraft citée dans les avis et le crédit dans
+  la fiche).
+- Version 0.1.0 (décision 18), Kazo OS 3.3.2 minimum (décision 17).
+- Parcours `tests/installed/install-and-open.mjs` (`npm run test:installed -- <wwwroot de l'OS>`) :
+  Kazo OS 3.3.2 publié (`kazoos-wasm-3.3.2.zip` de la release) servi comme un hébergement statique
+  simple, `sudo kazopkg install Kazo-ca/Os-App-Word` servi depuis les paquets locaux, un `.docx`
+  écrit avec Kazo Word, fermé, puis **double-cliqué dans l'Explorateur de fichiers : Kazo Word
+  l'ouvre**, et les fichiers de licence répondent depuis le paquet installé. Vert le 2026-11-13,
+  sans nouvelle connexion après l'installation. Avec un troisième argument, il écrit aussi les
+  captures du Store.
+- Constat : avec SwiftShader, une capture de page ne montre pas ce que WebGPU dessine (le canevas
+  sort vide) ; la passe de captures laisse WebGPU éteint, WordCraft dessine alors avec WebGL 2.
+- Ensuite : PR `word/base` → `main` (décision de Benoit), tag `v0.1.0` par « Tag a release », PR
+  au catalogue d'Os-AppMarketPlace, ligne dans `features.md` de Kazo OS ; l'installation depuis le
+  Store se vérifie une fois le catalogue publié.
 
 ### Ordre
 
@@ -284,6 +473,10 @@ Chaque proposition acceptée retire un contournement du proxy.
 | Risque | Réponse |
 | --- | --- |
 | WordCraft change vite (une version par semaine) | Version épinglée ; les tests du proxy et les parcours Playwright disent ce qu'une montée de version casse. |
-| Le Store analyse le JavaScript de l'app (CodeQL) | Le `.js` généré de WordCraft sera analysé : à vérifier au chantier 5, avant le tag. |
-| Mémoire : chaque fenêtre charge son propre WordCraft | Mesurer au chantier 1 avec deux et quatre fenêtres. |
+| Le Store analyse le JavaScript de l'app (CodeQL) | Le `.js` généré de WordCraft (180 Ko de liaison wasm-bindgen) est analysé par le CodeQL de la PR du catalogue ; ses résultats sont résumés dans le commentaire de revue, sans bloquer. Lu au chantier 5 sur la PR du catalogue. |
+| Mémoire : chaque fenêtre charge son propre WordCraft | Mesuré au chantier 1 : environ 130 Mo pour la première fenêtre, 25 Mo par fenêtre de plus, sans document. À refaire avec de gros documents au chantier 2. |
+| Une fenêtre qui passe devant recharge son iframe (Kazo OS déplace son élément dans la page) | Décision 14 : Kazo OS garde un ordre stable des fenêtres dans la page, l'empilement restant en `z-index` (fil à part de `Kazo-ca/Os`). Publié dans Kazo OS 3.3.1 ; le parcours « le document survit quand sa fenêtre passe devant » le vérifie. |
+| Kazo OS refuse un fichier de plus de 16 Mio (ADR 0094), le `.wasm` fait 60 Mo | Décision 17 : Kazo OS 3.3.2 accepte 128 Mio par fichier (ADR 0245) ; Kazo Word s'installe dans l'OS publié. |
+| Le `.wasm` fait 61 Mo, pas 13 Mo | Décision 15 : la décision 13 reste. |
+| Réglages de WordCraft partagés par tous les utilisateurs Kazo (même origine) | Essai du chantier 3 tenu : réglages dans `~/.config/ca.kazo.word/`. Restent partagées les polices ajoutées (IndexedDB). |
 | GPU absent | Écran d'erreur clair (`failed`). |
