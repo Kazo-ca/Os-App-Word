@@ -25,4 +25,16 @@
     <PackageReference Include="Kazo.Os.App.Build" Version="$(KazoOsVersion)" PrivateAssets="all" />
   </ItemGroup>
 
+  <!--
+    Licenses in the package (work item 5, THIRD-PARTY-NOTICES.md): the repository's LICENSE and
+    third-party notices are linked into wwwroot/legal/, so they become static web assets and
+    KazoOsPack puts them in the .kazoapp next to WordCraft's own notices (wwwroot/wordcraft/).
+    Linked, not copied: the root files stay the only ones to edit.
+  -->
+  <ItemGroup>
+    <Content Include="../../LICENSE" Link="wwwroot/legal/LICENSE.txt" />
+    <Content Include="../../THIRD-PARTY-NOTICES.md" Link="wwwroot/legal/THIRD-PARTY-NOTICES.md" />
+    <Content Include="../../THIRD-PARTY-NOTICES-fr.md" Link="wwwroot/legal/THIRD-PARTY-NOTICES-fr.md" />
+  </ItemGroup>
+
 </Project>

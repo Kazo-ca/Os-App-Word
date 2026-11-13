@@ -5,7 +5,8 @@
 Un traitement de texte pour Kazo OS : [WordCraft](https://github.com/storytold/wordcraft) (MIT ou
 Apache-2.0) tourne dans un iframe d'une fenêtre Kazo OS, piloté par le C# de la fenêtre à
 travers un petit proxy. En cours de développement : voir le [plan](doc/fr/plan.md) et le
-[plan d'intégration](doc/fr/integration-plan.md).
+[plan d'intégration](doc/fr/integration-plan.md). Les avis de WordCraft et les licences du paquet :
+[THIRD-PARTY-NOTICES-fr.md](THIRD-PARTY-NOTICES-fr.md).
 
 | Dossier | Contenu |
 | --- | --- |
@@ -14,11 +15,13 @@ travers un petit proxy. En cours de développement : voir le [plan](doc/fr/plan.
 | `tests/Kazo.Word.Tests` | Tests C# : manifeste, démarrage de WordCraft, le build de WordCraft correspond à sa provenance |
 | `tests/proxy` | Tests du proxy de l'iframe (avec un faux WordCraft) et du module côté OS, sous node |
 | `tests/e2e` | Parcours dans l'hôte Kazo OS avec Playwright : démarrage, saisie, WebGPU et WebGL 2, deux fenêtres |
+| `tests/installed` | L'app telle que le Store l'installe, dans un Kazo OS publié : `kazopkg install`, un `.docx` ouvert par double-clic, les captures du Store |
 | `tools/vendor-wordcraft.sh` | Place un build de WordCraft dans `src/Kazo.Word/wwwroot/wordcraft/` avec sa provenance |
 | `tools/build-wordcraft.sh` | Compile WordCraft depuis `external/wordcraft` et le place dans l'app |
 | `external/KazoOs` | Le dépôt Kazo OS en sous-module git, sur un tag de release |
 | `external/wordcraft` | Notre fork de WordCraft (`Kazo-ca/wordcraft`) en sous-module git : utile seulement pour compiler WordCraft |
-| `store/` | Ce que montre le Kazo OS Store : icône (PNG 256×256), descriptions courtes, descriptions, `store.json` |
+| `store/` | Ce que montre le Kazo OS Store : icône (PNG 256×256), descriptions courtes, descriptions, captures d'écran, `store.json` |
+| `THIRD-PARTY-NOTICES-fr.md` | WordCraft et ce qu'il embarque ; lié dans le paquet avec `LICENSE` (`wwwroot/legal/`) |
 
 ## Le build de WordCraft
 
@@ -60,6 +63,19 @@ npm ci
 npm test               # le proxy et le module côté OS
 npm run test:e2e       # Playwright, dans l'hôte Release (Chromium) : démarrage, ouvrir et enregistrer
 ```
+
+L'app telle que le Store l'installe, dans un Kazo OS publié (pas en CI : environ cinq minutes) :
+
+```bash
+dotnet build src/Kazo.Word -c Release -t:KazoOsPack
+# kazoos-wasm-<version>.zip d'une release de Kazo OS (3.3.2 ou plus récente), dézippé dans <os>
+npm run test:installed -- <os> [dossier des paquets] [dossier des captures]
+```
+
+Il installe Kazo Word par `sudo kazopkg install Kazo-ca/Os-App-Word` (GitHub servi depuis les
+paquets locaux), enregistre un `.docx`, le double-clique dans l'Explorateur de fichiers et vérifie
+que Kazo Word l'ouvre. Avec un dossier de captures, il écrit aussi les captures du Store
+(`store/screenshots/`).
 
 Lancez `launch ca.kazo.word --webgl` dans le terminal de Kazo OS pour forcer le rendu WebGL 2
 de WordCraft.
