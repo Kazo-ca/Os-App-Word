@@ -2,3 +2,8 @@
 	path = external/KazoOs
 	url = https://github.com/Kazo-ca/Os.git
 	shallow = true
+[submodule "external/wordcraft"]
+	path = external/wordcraft
+	url = https://github.com/Kazo-ca/wordcraft.git
+	shallow = true
+	branch = kazo/v0.18.1

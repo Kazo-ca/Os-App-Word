@@ -67,6 +67,10 @@ test('a picture from the Kazo files goes into the document through the OS dialog
 
     // The picture in ~ (File Explorer's Upload button imports host files into the shown folder).
     await openApp(page, 'File Explorer');
+    // Wait for the first listing of ~: File Explorer drops an upload made before its file view
+    // exists (UploadFilesAsync returns when _files is null), which a slow runner hits. Kazo OS's own
+    // FileExplorerUploadTests waits for its folder's rows the same way.
+    await page.locator('tr.entry-row').first().waitFor({ timeout: 30_000 });
     await page.locator('#fileInput').setInputFiles(picture);
     await page.getByText('icon.png', { exact: true }).first().waitFor({ timeout: 30_000 });
 

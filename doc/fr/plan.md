@@ -202,6 +202,6 @@ deux fenêtres en même temps.
 | 1. Solution et iframe | `word/1-solution` | plan | En cours (feu vert de Benoit le 2026-11-13). WordCraft tourne dans une fenêtre Kazo ; décisions 14 (ordre des fenêtres, correction de Kazo OS) et 15 (taille) prises ; reste le test du document qui survit et l'essai dans un OS publié. |
 | 2. Ouvrir et enregistrer | `word/2-open-save` | 1 | Fait le 2026-11-13 (résultat dans le [plan d'intégration](integration-plan.md#chantier-2--ouvrir-et-enregistrer-word2-open-save)), PR vers `word/base`. |
 | 3. Proxy complet | `word/3-proxy` | 1 | À faire |
-| 4. Build depuis les sources | `word/4-build-from-source` | 1, forks créés | À faire |
+| 4. Build depuis les sources | `word/4-build-from-source` | 1, forks créés | Fait le 2026-11-13 (résultat dans le [plan d'intégration](integration-plan.md#chantier-4--build-depuis-les-sources-word4-build-from-source)), PR vers `word/base`. |
 | 5. Store | `word/5-store` | 2, 3, 4 | À faire |
 | Piste en amont | fork de `storytold/craft-libs` | rien | À faire |

@@ -15,12 +15,24 @@ public sealed partial class WordCraftBuildTests
     private static readonly JsonElement Provenance = ReadProvenance();
 
     [Fact]
-    public void The_provenance_names_the_pinned_official_release()
+    public void The_provenance_names_the_official_zip_or_the_commit_of_the_submodule()
     {
-        Assert.Equal("0.18.1", Provenance.GetProperty("version").GetString());
         JsonElement source = Provenance.GetProperty("source");
-        Assert.Equal("release-zip", source.GetProperty("kind").GetString());
-        Assert.Equal("3daa7c2d1f209a7eeb2527fcefa3fe31e875848fb1970d68f54edae55fe0bc9f", source.GetProperty("sha256").GetString());
+        string? kind = source.GetProperty("kind").GetString();
+
+        if (kind == "release-zip")
+        {
+            // tools/vendor-wordcraft.sh without --dir: the pinned official zip.
+            Assert.Equal("0.18.1", Provenance.GetProperty("version").GetString());
+            Assert.Equal("3daa7c2d1f209a7eeb2527fcefa3fe31e875848fb1970d68f54edae55fe0bc9f", source.GetProperty("sha256").GetString());
+            return;
+        }
+
+        // Work item 4: our own build. It must come from the commit the submodule points at, so
+        // moving the submodule without rebuilding (or the reverse) fails here.
+        Assert.Equal("source-build", kind);
+        Assert.Equal(SubmoduleCommit(), source.GetProperty("commit").GetString());
+        Assert.Equal("https://github.com/Kazo-ca/wordcraft.git", source.GetProperty("repository").GetString());
     }
 
     [Fact]
@@ -80,6 +92,29 @@ public sealed partial class WordCraftBuildTests
     // `import ... from './snippets/...'` in the wasm-bindgen glue.
     [GeneratedRegex(@"from\s+['""]\./(?<path>[^'""]+)['""]")]
     private static partial Regex RelativeImport();
+
+    // The commit recorded for external/wordcraft in git's index (the gitlink), which is there even
+    // when the submodule itself is not checked out (CI fetches only the Kazo OS one).
+    private static string SubmoduleCommit()
+    {
+        System.Diagnostics.ProcessStartInfo start = new("git", ["ls-files", "--stage", "--", "external/wordcraft"])
+        {
+            WorkingDirectory = FindRepositoryRoot(),
+            RedirectStandardOutput = true,
+            UseShellExecute = false,
+        };
+        using System.Diagnostics.Process git = System.Diagnostics.Process.Start(start)!;
+        string output = git.StandardOutput.ReadToEnd();
+        git.WaitForExit();
+
+        // "160000 <commit> 0\texternal/wordcraft"
+        Match match = Gitlink().Match(output);
+        Assert.True(git.ExitCode == 0 && match.Success, $"external/wordcraft is not a submodule in git's index: {output}");
+        return match.Groups["commit"].Value;
+    }
+
+    [GeneratedRegex(@"^160000 (?<commit>[0-9a-f]{40}) ")]
+    private static partial Regex Gitlink();
 
     private static JsonElement ReadProvenance()
     {
