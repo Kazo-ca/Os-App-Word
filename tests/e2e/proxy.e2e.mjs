@@ -110,7 +110,9 @@ test('a picture from the Kazo files goes into the document through the OS dialog
         const summary = await window.wordcraft.docInspect();
         return /"(picture|image|drawing)"/i.test(JSON.stringify(summary));
     }, null, { timeout: 20_000 });
-    assert.equal(await frame.evaluate(() => document.getElementById('rfd-overlay')), null, 'rfd\'s overlay is gone');
+    // rfd removes its (hidden) overlay once it has handed the files over, which a busy page can do
+    // after the picture is already in the document.
+    await frame.waitForFunction(() => document.getElementById('rfd-overlay') === null, null, { timeout: 10_000 });
     assert.equal(choosers.length, 0, 'the browser\'s file chooser never opened');
     assert.deepEqual(errors, []);
     await page.close();

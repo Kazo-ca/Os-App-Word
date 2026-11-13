@@ -202,7 +202,7 @@ Aucun chantier ne commence sans le feu vert de Benoit.
 | --- | --- | --- |
 | Ordre stable des fenêtres dans la page (décision 14) | Fil « Garder l'ordre des fenêtres stable » | Fait : PR [Os#452](https://github.com/Kazo-ca/Os/pull/452) (ADR 0244), publiée dans Kazo OS 3.3.1 le 2026-11-13. |
 | Correction du service worker de Kazo OS (décision 10) | Fil « Servir la page iframe des apps installées » | Fait : PR [Os#451](https://github.com/Kazo-ca/Os/pull/451) (ADR 0243), publiée dans Kazo OS 3.3.1 le 2026-11-13. Kazo Word demande Kazo OS 3.3.1 ou plus. |
-| Un fichier de plus de 16 Mio dans Kazo OS (décision 17) | Fil Kazo OS demandé au coordinateur le 2026-11-13 | À faire : nouvelle ADR, puis Kazo OS 3.4.0. Le système de fichiers de l'OS refuse tout fichier de plus de 16 Mio (ADR 0094), et le `.wasm` en fait 60 : l'installation dans un OS publié échoue. Bloque le chantier 5. |
+| Un fichier de plus de 16 Mio dans Kazo OS (décision 17) | Fil « Relever la taille maximale de fichier » | En cours : 128 Mio par fichier, PR [Os#455](https://github.com/Kazo-ca/Os/pull/455) (ADR 0245), à fusionner, puis Kazo OS 3.4.0. Sur une publication réduite de cette branche, `sudo kazopkg install Kazo-ca/Os-App-Word` réussit en 15,6 s et WordCraft s'affiche. Le système de fichiers de l'OS refuse tout fichier de plus de 16 Mio (ADR 0094), et le `.wasm` en fait 60 : l'installation dans un OS publié échoue. Bloque le chantier 5. |
 | Forks `Kazo-ca/wordcraft`, `Kazo-ca/craft-libs`, `Kazo-ca/gridcraft` (décision 9) | Benoit, par le coordinateur | Avant le chantier 4. |
 
 ### Chantier 1 : solution et iframe (`word/1-solution`)

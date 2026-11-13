@@ -199,7 +199,7 @@ work item starts without Benoit's go.
 | --- | --- | --- |
 | Stable order of the windows in the page (decision 14) | Thread "Garder l'ordre des fenêtres stable" | Done: PR [Os#452](https://github.com/Kazo-ca/Os/pull/452) (ADR 0244), released in Kazo OS 3.3.1 on 2026-11-13. |
 | Fix of the Kazo OS service worker (decision 10) | Thread "Servir la page iframe des apps installées" | Done: PR [Os#451](https://github.com/Kazo-ca/Os/pull/451) (ADR 0243), released in Kazo OS 3.3.1 on 2026-11-13. Kazo Word requires Kazo OS 3.3.1 or later. |
-| A file over 16 MiB in Kazo OS (decision 17) | Kazo OS thread asked of the coordinator on 2026-11-13 | To do: new ADR, then Kazo OS 3.4.0. The OS file system refuses any file over 16 MiB (ADR 0094), and the `.wasm` is 60 MB: installing in a published OS fails. Blocks work item 5. |
+| A file over 16 MiB in Kazo OS (decision 17) | Thread "Relever la taille maximale de fichier" | In progress: 128 MiB per file, PR [Os#455](https://github.com/Kazo-ca/Os/pull/455) (ADR 0245), to merge, then Kazo OS 3.4.0. On a trimmed publish of that branch, `sudo kazopkg install Kazo-ca/Os-App-Word` succeeds in 15.6 s and WordCraft shows. The OS file system refuses any file over 16 MiB (ADR 0094), and the `.wasm` is 60 MB: installing in a published OS fails. Blocks work item 5. |
 | Forks `Kazo-ca/wordcraft`, `Kazo-ca/craft-libs`, `Kazo-ca/gridcraft` (decision 9) | Benoit, through the coordinator | Before work item 4. |
 
 ### Work item 1: solution and iframe (`word/1-solution`)
