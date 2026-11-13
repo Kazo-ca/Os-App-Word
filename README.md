@@ -15,18 +15,37 @@ proxy. Work in progress: see the [plan](doc/en/plan.md) and the
 | `tests/proxy` | Tests of the iframe proxy (with a fake WordCraft) and of the OS-side module, under node |
 | `tests/e2e` | Journeys in the Kazo OS host with Playwright: start, typing, WebGPU and WebGL 2, two windows |
 | `tools/vendor-wordcraft.sh` | Puts a WordCraft build in `src/Kazo.Word/wwwroot/wordcraft/` with its provenance |
+| `tools/build-wordcraft.sh` | Compiles WordCraft from `external/wordcraft` and vendors it |
 | `external/KazoOs` | The Kazo OS repository as a git submodule, on a release tag |
+| `external/wordcraft` | Our WordCraft fork (`Kazo-ca/wordcraft`) as a git submodule: only needed to compile WordCraft |
 | `store/` | What the Kazo OS Store shows: icon (PNG 256×256), short descriptions, descriptions, `store.json` |
 
 ## WordCraft's build
 
-`src/Kazo.Word/wwwroot/wordcraft/` is never edited by hand (decision 13 of the plan). To change
-the WordCraft version, change the pinned version and SHA-256 at the top of
-`tools/vendor-wordcraft.sh`, run it, and commit the folder with its `wordcraft.json` in a PR:
+`src/Kazo.Word/wwwroot/wordcraft/` is never edited by hand (decision 13 of the plan). It is
+compiled from the `external/wordcraft` submodule, our fork of WordCraft, and its
+`wordcraft.json` names the fork's commit (a C# test checks it is the submodule's commit).
+
+To change the WordCraft version: move the submodule to a commit of the fork (for a release, the
+fork's `kazo/v<version>` branch, made from the upstream tag) in a PR. The **Build WordCraft**
+workflow builds it on that PR. Once it is merged, run **Build WordCraft** from the Actions tab
+on that branch: it compiles, runs the CI on the result and opens a PR that replaces the folder.
+
+The same build on a computer (Rust stable with `wasm32-unknown-unknown`, Trunk 0.21.14, and
+checkouts of `storytold/craft-i18n` and `storytold/craft-fonts` at the revisions the submodule
+pins; the script checks them):
+
+```bash
+git submodule update --init external/wordcraft
+CRAFT_I18N_DIR=<craft-i18n> CRAFT_FONTS_DIR=<craft-fonts> tools/build-wordcraft.sh
+```
+
+`tools/vendor-wordcraft.sh` also takes WordCraft's official zip (the source until work item 4):
 
 ```bash
 tools/vendor-wordcraft.sh                 # downloads the pinned official zip and checks it
 tools/vendor-wordcraft.sh --zip <file>    # same, from a zip already downloaded
+tools/vendor-wordcraft.sh --dir <folder>  # a folder built from external/wordcraft by packaging/web/package.sh
 ```
 
 The `.wasm` is 61 MB: GitHub warns about it on push, and accepts it.
