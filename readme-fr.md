@@ -46,7 +46,10 @@ libre écrit en Rust, qui tourne ici dans une fenêtre de Kazo OS.
 - L'impression passe par la boîte d'impression du navigateur.
 - **L'enregistrement automatique (AutoSave) n'est pas encore disponible** : enregistrez avec
   Ctrl+S (Kazo-ca/Os-App-Word#17, en attente de WordCraft).
-- Demande Kazo OS 3.3.2 ou plus récent.
+- La fenêtre reste sur son écran : avec plusieurs écrans, Kazo Word ne passe pas sur un autre
+  écran (le menu « Autre écran » dit pourquoi), car changer d'écran rechargerait WordCraft et
+  perdrait le document.
+- Demande Kazo OS 3.3.3 ou plus récent.
 
 ## Licence
 
@@ -139,7 +142,7 @@ L'app telle que le Store l'installe, dans un Kazo OS publié (pas en CI : enviro
 
 ```bash
 dotnet build src/Kazo.Word -c Release -t:KazoOsPack
-# kazoos-wasm-<version>.zip d'une release de Kazo OS (3.3.2 ou plus récente), dézippé dans <os>
+# kazoos-wasm-<version>.zip d'une release de Kazo OS (3.3.3 ou plus récente), dézippé dans <os>
 npm run test:installed -- <os> [dossier des paquets] [dossier des captures]
 npm run test:installed -- --store <os>   # après une release : installe depuis le vrai Kazo OS Store
 ```

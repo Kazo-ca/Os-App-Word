@@ -44,7 +44,10 @@ processor written in Rust, which runs here in a Kazo OS window.
 - Printing goes through the browser's print dialog.
 - **AutoSave is not available yet**: save with Ctrl+S (Kazo-ca/Os-App-Word#17, waiting for
   WordCraft).
-- Needs Kazo OS 3.3.2 or later.
+- The window stays on its screen: with several screens, Kazo Word does not move to another one
+  (the "Other screen" menu says why), because changing screen would reload WordCraft and lose
+  the document.
+- Needs Kazo OS 3.3.3 or later.
 
 ## License
 
@@ -136,7 +139,7 @@ The app as the Store installs it, in a published Kazo OS (not in CI: about five 
 
 ```bash
 dotnet build src/Kazo.Word -c Release -t:KazoOsPack
-# kazoos-wasm-<version>.zip of a Kazo OS release (3.3.2 or later), unzipped in <os>
+# kazoos-wasm-<version>.zip of a Kazo OS release (3.3.3 or later), unzipped in <os>
 npm run test:installed -- <os> [packages folder] [screenshots folder]
 npm run test:installed -- --store <os>   # after a release: installs from the real Kazo OS Store
 ```
