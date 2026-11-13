@@ -1,6 +1,6 @@
 > [English version](README.md)
 
-<!-- Fiche du Store : le même texte que store/description.fr.md et les mêmes captures que le Kazo OS Store (store/screenshots/). Les changer ensemble. -->
+<!-- Fiche du Store : générée depuis store/ par .github/scripts/store-readme.mjs. Modifiez store/, puis lancez-le. -->
 
 <img src="store/icon.png" alt="" width="96" align="right">
 
@@ -189,7 +189,10 @@ Forcez l'un ou l'autre avec `-p:KazoOsUseSource=true` ou `false`.
 
 ### Publier dans le Kazo OS Store
 
-1. Remplissez `store/` (icône, descriptions courtes, descriptions, catégorie et étiquettes dans `store.json`).
+1. Remplissez `store/` (icône, descriptions courtes, descriptions, captures d'écran, catégorie et
+   étiquettes dans `store.json`), puis lancez `npm run store:readme` : il copie les descriptions et
+   les captures en haut de `README.md` et de `readme-fr.md`. La CI échoue quand un README diffère de
+   `store/`.
 2. Changez `Version` dans la classe `[AppManifest]` de l'app et validez-la dans `main`, puis posez le
    tag : lancez le workflow **Tag a release** (onglet Actions, ou l'API GitHub pour un agent), qui pose
    sur la tête de `main` le tag de la version du manifeste et lance les deux workflows de
