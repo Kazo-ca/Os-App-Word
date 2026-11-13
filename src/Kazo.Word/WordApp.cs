@@ -1,4 +1,5 @@
 using Kazo.Os.App.Abstractions;
+using Kazo.Word.Documents;
 
 namespace Kazo.Word;
 
@@ -7,8 +8,8 @@ namespace Kazo.Word;
 /// <c>manifest.json</c> from this class (Kazo.Os.App.Build); it is never instantiated at run time.
 /// </summary>
 /// <remarks>
-/// Work item 1 declares the base: the window and its size, several windows at once, no file
-/// associations yet. Work item 2 adds the document formats, the OS dialogs and the capabilities
+/// Work item 1 declared the base: the window and its size, several windows at once. Work item 2
+/// adds the document formats (<see cref="DocumentFormats"/>), the OS dialogs and the capabilities
 /// they need.
 /// </remarks>
 [AppManifest]
@@ -54,18 +55,28 @@ public sealed class WordApp : AppDefinition
 
     /// <inheritdoc />
     /// <remarks>
-    /// Work item 3: the OS open dialog replaces WordCraft's file picker and the chosen files are read
-    /// (pictures, fonts, recipients); WordCraft's settings live in <c>~/.config/ca.kazo.word/</c>; a
-    /// document picked in WordCraft, and Ctrl+N, open another Kazo Word window.
+    /// Work item 2: the OS Open and Save dialogs, the user's files (a file chosen in a dialog
+    /// outside the home folder is reached through the dialog's grant), and <c>apps.launch</c> to
+    /// open a file in another Kazo Word window. Work item 3: the files picked in WordCraft are read
+    /// (pictures, fonts, recipients), and WordCraft's settings live in <c>~/.config/ca.kazo.word/</c>.
     /// </remarks>
     public override IReadOnlyList<string> Capabilities =>
     [
         AppCapabilities.DialogFileOpen,
+        AppCapabilities.DialogFileSave,
         AppCapabilities.FileSystemUserHomeRead,
+        AppCapabilities.FileSystemUserHomeWrite,
         AppCapabilities.FileSystemPrivateRead,
         AppCapabilities.FileSystemPrivateWrite,
         AppCapabilities.AppsLaunch,
     ];
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// The word-processing documents with <c>open</c> and <c>edit</c> (Kazo Word becomes their
+    /// app); Markdown, text, HTML and TeX with <c>open</c> only, for "Open with" (doc/en/plan.md).
+    /// </remarks>
+    public override IReadOnlyList<FileHandler> FileHandlers => DocumentFormats.FileHandlers;
 
     /// <inheritdoc />
     public override IReadOnlyList<string> Icons => ["icons/app.svg"];

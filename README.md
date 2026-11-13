@@ -38,7 +38,7 @@ dotnet build Kazo.Word.slnx -c Release
 dotnet test Kazo.Word.slnx -c Release --no-build
 npm ci
 npm test               # the proxy and the OS-side module
-npm run test:e2e       # Playwright, in the Release host (Chromium)
+npm run test:e2e       # Playwright, in the Release host (Chromium): start, open and save
 ```
 
 Launch `launch ca.kazo.word --webgl` in the Kazo OS terminal to force WordCraft's WebGL 2

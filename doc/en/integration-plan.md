@@ -248,6 +248,39 @@ A trial that must prove WordCraft starts in a Kazo window.
 - **Done when**: no case loses changes unless the user chose it, including when the write
   fails.
 
+**Result (2026-11-13).**
+
+- What WordCraft 0.18.1 sends, checked in its page: a new document is named after its first
+  words ("Hello.docx") and its first save arrives with `saveAs` true, the next ones with the same
+  name and `saveAs` false; Save As to `.odt` arrives with `saveAs` true; a PDF, PNG, HTML,
+  Markdown or text file arrives with `saveAs` false (copies). WordCraft clears its "modified"
+  state as soon as it has sent the save.
+- `DocumentSession` binds each WordCraft document name to a path. A copy never changes the
+  binding. A save that does not complete (dialog cancelled, write refused, any other error)
+  leaves the window "modified", and the next save of that document asks for a path again. When
+  the user picks another file name, the window renames the document in WordCraft
+  (`file.rename`) so its title and later saves carry the file's name.
+- Start: a requested file (launch argument) is read with `KazoFile` and sent with `open`;
+  otherwise a blank document (`file.new`). Either way WordCraft's start screen is closed
+  (`ui.backstage {"value": false}`).
+- Title: `*name — Kazo Word`, "Untitled" before the first save.
+- Close: `ui.inspect` lists the documents; "Yes" saves each one (`engine.execute` `file.save`
+  with `doc`) and closes only once all are written; "No" closes; "Cancel" keeps the window. If
+  WordCraft does not answer, the window only asks whether to close without saving.
+- Associations: the ten word-processing formats with `open` and `edit`; `.md`, `.txt`, `.html`,
+  `.htm`, `.tex` with `open` only. Capabilities: Open and Save dialogs, home folder read and
+  write, `apps.launch` (open a file in another Kazo Word window). `.tex` has no other app in
+  Kazo OS: Kazo Word becomes its default app in practice.
+- For work item 3: `WordWindow.OpenInNewWindowAsync(path)` (in place when the window holds only
+  an untouched blank document, otherwise a new window), `ShowOpenDialogAsync()` and
+  `IsUntouchedBlank`.
+- Found: a `[JSInvokable]` callback does not run in the app's context; without
+  `KazoExecutionContext.Enter(AppContext)`, `KazoFile` refuses. The Playwright run showed it.
+- Tests: 57 more xUnit cases (`DocumentSessionTests`, `DocumentFormatsTests`); three Playwright
+  runs (`tests/e2e/open-save.e2e.mjs`): save a new document, save it again without a dialog,
+  reopen it with `xdg-open` in a second window; Save As to `.odt` then a PDF copy; close with
+  changes (Cancel, cancelled dialog, then Yes). The write failure is covered in xUnit.
+
 ### Work item 3: full proxy (`word/3-proxy`)
 
 - File picker (the four uses), `Ctrl+N` and File › Open in a new window.
@@ -268,7 +301,8 @@ A trial that must prove WordCraft starts in a Kazo window.
 - Picker: `host/file-picker.js` catches rfd's file field (click, or the `#rfd-overlay` card
   without activation) and sends `pick`. The use comes from the accepted extensions (document,
   picture, fonts, recipients). The window shows the OS dialog, reads the files and answers
-  `picked`. A document opens in a new Kazo Word window and WordCraft hears "cancelled".
+  `picked`. For a document, WordCraft hears "cancelled" and the file opens through work item 2's
+  `OpenInNewWindowAsync` (a new window, or in place for an untouched blank document).
   Cancelling goes through a `change` with no file: the `cancel` event makes WordCraft 0.18.1
   panic.
 - Shortcuts: `host/reserved-keys.js` keeps the OS default shortcuts (an app cannot read the
@@ -277,7 +311,7 @@ A trial that must prove WordCraft starts in a Kazo window.
 - Theme and language: the window sends `ui.theme` on each OS theme change and picks the
   WordCraft language closest to the Kazo culture (`WordCraftLanguage`).
 - Settings trial: **it holds**. `localStorage` is replaced in the iframe by an in-memory copy
-  loaded from `~/.config/ca.kazo.word/web-storage.json`, written 500 ms after the last write.
+  loaded from `~/.config/ca.kazo.word/web-storage.json`, written at most 500 ms after the first unsaved write.
   With two windows, the last write wins. Added fonts (IndexedDB) stay shared by the origin.
 - Window menu: dropped (decision 16).
 - The proxy's messages arrive outside the Kazo execution context: each handler that reaches
@@ -287,7 +321,7 @@ A trial that must prove WordCraft starts in a Kazo window.
   system clipboard, but one trial pasted the text copied earlier twice (to look at); the focus
   relay becomes useless once Kazo OS brings the window forward on a click in its iframe (to
   review at the submodule upgrade).
-- Tests: 31 proxy tests (`npm test`), 68 xUnit tests, 6 Playwright journeys
+- Tests: 31 proxy tests (`npm test`), 125 xUnit tests with work item 2, 6 Playwright journeys
   (`tests/e2e/proxy.e2e.mjs`), which fail if the browser's file chooser opens.
 
 ### Work item 4: build from source (`word/4-build-from-source`)

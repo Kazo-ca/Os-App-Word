@@ -21,4 +21,13 @@
             <button type="button" class="word-retry" @onclick="RetryAsync">@L["Retry"]</button>
         </div>
     }
+
+    @if (_notice is not null)
+    {
+        @* Over WordCraft, at the bottom right: a failed write, a cancelled save, a copy written. *@
+        <div class="word-notice @(_noticeIsError ? "error" : string.Empty)" role="@(_noticeIsError ? "alert" : "status")">
+            <span class="word-notice-text">@_notice</span>
+            <button type="button" class="word-notice-close" aria-label="@L["Dismiss"]" @onclick="DismissNotice">×</button>
+        </div>
+    }
 </div>

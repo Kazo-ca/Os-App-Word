@@ -1,6 +1,7 @@
 using Kazo.Os.AppSdk.Blazor;
 using Kazo.Os.AppSdk.Globalization;
 using Kazo.Word.Hosting;
+using Kazo.Word.Opening;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Localization;
 using Microsoft.JSInterop;
@@ -13,19 +14,17 @@ namespace Kazo.Word;
 /// not answer within <see cref="FrameStartup.Timeout"/>.
 /// </summary>
 /// <remarks>
-/// Work item 1 shows WordCraft and nothing else: no file is opened or saved yet (work item 2). The
+/// Opening, saving and the close guard are in <c>WordWindow.Documents.cs</c> (work item 2). The
 /// launch argument <c>--webgl</c> forces WordCraft's WebGL 2 renderer, to try it without WebGPU.
 /// </remarks>
 public sealed partial class WordWindow : IAsyncDisposable
 {
-    /// <summary>Launch argument that forces WordCraft's WebGL 2 renderer.</summary>
-    public const string WebGlArgument = "--webgl";
-
     private readonly FrameStartup _startup = new();
     private ElementReference _frameHost;
     private WordFrame? _frame;
     private CancellationTokenSource? _timeout;
     private IStringLocalizer<Strings>? _localizer;
+    private OpenRequest _request = new(null, false);
 
     [Inject]
     private IJSRuntime JavaScript { get; set; } = default!;
@@ -43,6 +42,16 @@ public sealed partial class WordWindow : IAsyncDisposable
         CancelTimeout();
         await StopFrameAsync();
         await FlushSettingsAsync();
+        _nextSave?.TrySetResult(false);
+        _saveGate.Dispose();
+    }
+
+    /// <inheritdoc />
+    /// <remarks>Reads what the window was started for, and names it before it is first shown.</remarks>
+    protected override async Task OnAppInitializedAsync()
+    {
+        _request = OpenRequest.FromArguments(LaunchArguments);
+        await SetWindowTitleAsync(DocumentTitle);
     }
 
     /// <inheritdoc />
@@ -70,13 +79,15 @@ public sealed partial class WordWindow : IAsyncDisposable
         frame.Ready += OnReadyAsync;
         frame.Failed += OnFailedAsync;
         ConnectProxy(frame, connect: true);
+        frame.DirtyChanged += OnDirtyChangedAsync;
+        frame.Saving += OnSavingAsync;
         _frame = frame;
         ArmTimeout(_startup.Attempt);
 
         FrameOptions options = new(
             Author: AppContext.UserDisplayName,
             Language: AppContext.Culture.TwoLetterISOLanguageName,
-            WebGl: LaunchArguments.Contains(WebGlArgument, StringComparer.Ordinal),
+            WebGl: _request.WebGl,
             Title: L["EditorLabel"],
             ReservedKeys: ReservedKeys.All,
             Settings: await LoadSettingsAsync());
@@ -100,6 +111,8 @@ public sealed partial class WordWindow : IAsyncDisposable
         _frame.Ready -= OnReadyAsync;
         _frame.Failed -= OnFailedAsync;
         ConnectProxy(_frame, connect: false);
+        _frame.DirtyChanged -= OnDirtyChangedAsync;
+        _frame.Saving -= OnSavingAsync;
         await _frame.DisposeAsync();
         _frame = null;
     }
@@ -122,6 +135,7 @@ public sealed partial class WordWindow : IAsyncDisposable
 
         CancelTimeout();
         await InvokeAsync(StateHasChanged);
+        await PrepareDocumentAsync();
         if (_frame is { } frame)
         {
             await ApplyThemeAndLanguageAsync(frame);

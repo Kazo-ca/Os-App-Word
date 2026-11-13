@@ -36,7 +36,8 @@ export function frameUrl(base, { author = "", webgl = false } = {}) {
  * @param {{ invokeMethodAsync(name: string, ...args: unknown[]): Promise<unknown> }} dotnet The WordFrame.
  * @param {{ author?: string, language?: string, webgl?: boolean, title?: string,
  *           reservedKeys?: object[], settings?: Record<string, string> | null }} options
- * @returns {{ focus(): void, request(method: string, params?: object, timeoutMs?: number): Promise<unknown>,
+ * @returns {{ focus(): void, open(name: string, bytes: Uint8Array): boolean,
+ *             request(method: string, params?: object, timeoutMs?: number): Promise<unknown>,
  *             answerPick(id: number, files: { name: string, type: string, bytes: Uint8Array }[] | null): void,
  *             colorScheme(): string, dispose(): void }}
  */
@@ -84,6 +85,16 @@ export function create(container, dotnet, options = {}) {
                 break;
             case "dirty":
                 deliver("dirty", message.dirty ? "true" : "false");
+                break;
+            case "save":
+                // The bytes cross to .NET as a byte[] (Blazor's binary interop), without base64.
+                if (!disposed) {
+                    const bytes = message.bytes instanceof ArrayBuffer ? new Uint8Array(message.bytes) : new Uint8Array(0);
+                    dotnet.invokeMethodAsync("OnFrameSave", String(message.name ?? ""), message.saveAs === true, bytes).catch(() => {
+                        // The window is closing: the save is lost with it, as WordCraft is.
+                    });
+                }
+
                 break;
             case "focus":
                 // The window's frame activates it on pointerdown; a click inside the iframe never
@@ -174,6 +185,23 @@ export function create(container, dotnet, options = {}) {
     return {
         focus() {
             iframe.contentWindow?.focus();
+        },
+        /**
+         * Sends a document to WordCraft (`open`); its bytes are transferred, not copied again.
+         * @param {string} name The file name WordCraft gives the document.
+         * @param {Uint8Array} bytes The file's content, from .NET.
+         * @returns {boolean} false when WordCraft is not connected.
+         */
+        open(name, bytes) {
+            if (!port || disposed) {
+                return false;
+            }
+
+            const buffer = bytes.byteOffset === 0 && bytes.byteLength === bytes.buffer.byteLength
+                ? bytes.buffer
+                : bytes.slice().buffer;
+            port.postMessage({ type: "open", name, bytes: buffer }, [buffer]);
+            return true;
         },
         request(method, params = {}, timeoutMs = 0) {
             if (!port || disposed) {

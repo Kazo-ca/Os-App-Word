@@ -57,6 +57,15 @@ public sealed class WordFrame : IAsyncDisposable
     /// <summary>Raised with the error when WordCraft did not start.</summary>
     public event Func<string?, Task>? Failed;
 
+    /// <summary>Raised when the document WordCraft shows gets changes (<see langword="true"/>) or loses them.</summary>
+    public event Func<bool, Task>? DirtyChanged;
+
+    /// <summary>
+    /// Raised for every file WordCraft saves: its name (the format is in the extension), WordCraft's
+    /// <c>saveAs</c>, and the bytes (section 5 of the integration plan).
+    /// </summary>
+    public event Func<FrameSave, Task>? Saving;
+
     /// <summary>Raised when a reserved chord meant for the window (<see cref="ReservedKeyTarget.App"/>) was typed.</summary>
     public event Func<ReservedKey, Task>? KeyPressed;
 
@@ -158,6 +167,38 @@ public sealed class WordFrame : IAsyncDisposable
         }
     }
 
+    /// <summary>Sends a document to WordCraft (<c>open</c>).</summary>
+    /// <param name="name">The file name WordCraft gives the document (its extension tells the format).</param>
+    /// <param name="bytes">The file's content.</param>
+    /// <returns><see langword="true"/> when WordCraft received it; <see langword="false"/> when it is not connected.</returns>
+    public async Task<bool> OpenAsync(string name, byte[] bytes)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+        ArgumentNullException.ThrowIfNull(bytes);
+        if (_frame is null)
+        {
+            return false;
+        }
+
+        try
+        {
+            return await _frame.InvokeAsync<bool>("open", name, bytes);
+        }
+        catch (JSDisconnectedException)
+        {
+            return false;
+        }
+    }
+
+    /// <summary>Called by <c>word-host.js</c> for each file WordCraft saves.</summary>
+    /// <param name="name">The file name WordCraft gave.</param>
+    /// <param name="saveAs">WordCraft's <c>saveAs</c>.</param>
+    /// <param name="bytes">The file's content.</param>
+    /// <returns>A task that completes once the window handled the save (written, or refused).</returns>
+    [JSInvokable]
+    public Task OnFrameSave(string name, bool saveAs, byte[] bytes) =>
+        Saving?.Invoke(new FrameSave(name, saveAs, bytes)) ?? Task.CompletedTask;
+
     /// <summary>Called by <c>word-host.js</c> for each message of the proxy.</summary>
     /// <param name="type">The message name, one of <see cref="FrameMessages"/>.</param>
     /// <param name="value">Its value, as text.</param>
@@ -167,6 +208,7 @@ public sealed class WordFrame : IAsyncDisposable
     {
         FrameMessages.Ready => Ready?.Invoke(value) ?? Task.CompletedTask,
         FrameMessages.Failed => Failed?.Invoke(value) ?? Task.CompletedTask,
+        FrameMessages.Dirty => DirtyChanged?.Invoke(value == "true") ?? Task.CompletedTask,
         FrameMessages.Key => OnKeyAsync(value),
         FrameMessages.Pick => Pickers.PickRequest.FromJson(value) is { } pick && PickRequested is { } picked
             ? picked(pick)

@@ -21,7 +21,10 @@ namespace Kazo.Word;
 /// </remarks>
 public sealed partial class WordWindow
 {
-    /// <summary>How long WordCraft's settings writes are gathered before the file is written.</summary>
+    /// <summary>
+    /// How long WordCraft's settings writes are gathered before the file is written: counted from
+    /// the first unsaved write, so a WordCraft that keeps writing still reaches the file.
+    /// </summary>
     public static readonly TimeSpan SettingsWriteDelay = TimeSpan.FromMilliseconds(500);
 
     private WebStorageFile? _settingsFile;
@@ -97,17 +100,17 @@ public sealed partial class WordWindow
         using IDisposable scope = KazoExecutionContext.Enter(AppContext);
         if (key with { Target = ReservedKeyTarget.App } == ReservedKeys.NewWindow)
         {
-            await InvokeAsync(() => LaunchNewWindowAsync(null));
+            await InvokeAsync(LaunchNewWindowAsync);
         }
     }
 
-    // A new Kazo Word window, empty or on a file.
-    private async Task LaunchNewWindowAsync(string? path)
+    // A new, empty Kazo Word window.
+    private async Task LaunchNewWindowAsync()
     {
         using IDisposable scope = KazoExecutionContext.Enter(AppContext);
         try
         {
-            await KazoApps.LaunchAsync(Manifest.Id, path is null ? [] : [path], AppContext.CancellationToken);
+            await KazoApps.LaunchAsync(Manifest.Id, [], AppContext.CancellationToken);
         }
         catch (Exception exception) when (exception is KazoAppLaunchException or UnauthorizedAccessException)
         {
@@ -116,8 +119,9 @@ public sealed partial class WordWindow
     }
 
     // WordCraft opened its file picker (section 6, "File › Open inside WordCraft"): the OS dialog
-    // instead. A document opens in a new Kazo Word window and WordCraft hears "cancelled"; any other
-    // file (a picture, fonts, a recipients list) is read and handed to WordCraft.
+    // instead. WordCraft hears "cancelled" for a document, which then opens through work item 2's
+    // OpenInNewWindowAsync (in place only for an untouched blank document); any other file (a
+    // picture, fonts, a recipients list) is read and handed to WordCraft.
     private Task OnPickRequestedAsync(PickRequest request) => InvokeAsync(async () =>
     {
         using IDisposable scope = KazoExecutionContext.Enter(AppContext);
@@ -128,6 +132,7 @@ public sealed partial class WordWindow
         }
 
         IReadOnlyList<PickedFile>? files = null;
+        string? document = null;
         try
         {
             OpenFileDialogResult choice = await OpenFileAsync(
@@ -143,7 +148,7 @@ public sealed partial class WordWindow
             {
                 if (request.Purpose == PickPurpose.Document)
                 {
-                    await LaunchNewWindowAsync(choice.Resources[0].Path.Value);
+                    document = choice.Resources[0].Path.Value;
                 }
                 else
                 {
@@ -155,6 +160,12 @@ public sealed partial class WordWindow
         {
             // WordCraft waits on its picker until it hears back: it always does, even on a failure.
             await frame.AnswerPickAsync(request.Id, files);
+        }
+
+        // After the answer: WordCraft's picker is closed before a document may open in this window.
+        if (document is not null)
+        {
+            await OpenInNewWindowAsync(document);
         }
     });
 
@@ -210,34 +221,41 @@ public sealed partial class WordWindow
         return filters;
     }
 
-    // WordCraft wrote a setting: the user's file is written once the writes stop for a moment
-    // (WordCraft rewrites wordcraft.ui on each change of its interface).
+    // WordCraft wrote a setting: the user's file is written a moment later, with every write
+    // gathered until then (WordCraft rewrites wordcraft.ui on each change of its interface). A write
+    // already waiting takes the new value: it saves the file as it is when it runs.
     private Task OnSettingChangedAsync(string key, string? value)
     {
-        if (_settingsFile is null || !_settingsFile.Set(key, value))
+        if (_settingsFile is null || !_settingsFile.Set(key, value) || _settingsWrite is not null)
         {
             return Task.CompletedTask;
         }
 
-        _settingsWrite?.Cancel();
-        _settingsWrite?.Dispose();
         CancellationTokenSource write = CancellationTokenSource.CreateLinkedTokenSource(AppContext.CancellationToken);
         _settingsWrite = write;
-        _ = WriteSettingsLaterAsync(write.Token);
+        _ = WriteSettingsLaterAsync(write);
         return Task.CompletedTask;
     }
 
-    private async Task WriteSettingsLaterAsync(CancellationToken cancellationToken)
+    private async Task WriteSettingsLaterAsync(CancellationTokenSource write)
     {
         using IDisposable scope = KazoExecutionContext.Enter(AppContext);
+        CancellationToken cancellationToken = write.Token;
         try
         {
             await Task.Delay(SettingsWriteDelay, cancellationToken);
+            // From here a new write schedules its own save, since this one may already have read the values.
+            if (ReferenceEquals(_settingsWrite, write))
+            {
+                _settingsWrite = null;
+                write.Dispose();
+            }
+
             await _settingsFile!.SaveAsync(cancellationToken);
         }
         catch (OperationCanceledException)
         {
-            // A newer write replaces this one, or the window closed.
+            // The window closed: FlushSettingsAsync writes what was waiting.
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {

@@ -72,4 +72,52 @@
   <data name="NewWindowFailed" xml:space="preserve">
     <value>Impossible d'ouvrir une nouvelle fenêtre Kazo Word : {0}</value>
   </data>
+  <data name="Untitled" xml:space="preserve">
+    <value>Sans titre</value>
+  </data>
+  <data name="OpenTitle" xml:space="preserve">
+    <value>Ouvrir un document</value>
+  </data>
+  <data name="SaveTitle" xml:space="preserve">
+    <value>Enregistrer le document</value>
+  </data>
+  <data name="SaveCopyTitle" xml:space="preserve">
+    <value>Enregistrer une copie</value>
+  </data>
+  <data name="FilterDocuments" xml:space="preserve">
+    <value>Documents</value>
+  </data>
+  <data name="FilterAll" xml:space="preserve">
+    <value>Tous les fichiers</value>
+  </data>
+  <data name="FilterFormat" xml:space="preserve">
+    <value>Fichier {0}</value>
+  </data>
+  <data name="OpenFailed" xml:space="preserve">
+    <value>Impossible d'ouvrir {0} : {1}</value>
+  </data>
+  <data name="NotConnected" xml:space="preserve">
+    <value>WordCraft n'est pas démarré.</value>
+  </data>
+  <data name="SaveFailed" xml:space="preserve">
+    <value>{0} n'a pas été enregistré : {1}. Le document reste modifié ; le prochain enregistrement demandera où l'écrire.</value>
+  </data>
+  <data name="SaveCancelled" xml:space="preserve">
+    <value>{0} n'a pas été enregistré. Le document reste modifié.</value>
+  </data>
+  <data name="CopySaved" xml:space="preserve">
+    <value>Copie enregistrée : {0}.</value>
+  </data>
+  <data name="Dismiss" xml:space="preserve">
+    <value>Fermer le message</value>
+  </data>
+  <data name="CloseTitle" xml:space="preserve">
+    <value>Modifications non enregistrées</value>
+  </data>
+  <data name="CloseUnsaved" xml:space="preserve">
+    <value>Enregistrer les modifications de {0} avant de fermer ? Oui enregistre, Non ferme sans enregistrer.</value>
+  </data>
+  <data name="CloseUnanswered" xml:space="preserve">
+    <value>WordCraft ne répond pas : {0} ne peut pas être enregistré. Fermer sans enregistrer ?</value>
+  </data>
 </root>

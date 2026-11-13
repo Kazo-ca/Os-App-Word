@@ -13,7 +13,7 @@ public static class FrameMessages
     /// <summary>WordCraft did not start; the value is the error.</summary>
     public const string Failed = "failed";
 
-    /// <summary>The shown document has changes, or not; the value is <c>true</c> or <c>false</c> (used from work item 2).</summary>
+    /// <summary>The shown document has changes, or not; the value is <c>true</c> or <c>false</c>.</summary>
     public const string Dirty = "dirty";
 
     /// <summary>A reserved chord meant for the window was typed in WordCraft; the value is the key's JSON.</summary>

@@ -52,15 +52,11 @@ async function openWord(page, count = 1) {
     return { frame: frames[frames.length - 1], iframe: page.locator('iframe.word-frame-iframe').nth(count - 1) };
 }
 
-/** A blank document, its start screen closed, the caret in the page. */
+/** The blank document the window starts with (work item 2 closes the start screen), the caret in the page. */
 async function blankDocument(page, frame, iframe) {
-    await frame.evaluate(() => window.wordcraft.execute('file.new', {}));
-    const box = await iframe.boundingBox();
-    const middle = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
-    await page.mouse.click(middle.x, middle.y);
-    await page.keyboard.press('Escape');
     await frame.waitForFunction(async () => (await window.wordcraft.uiInspect({})).ui.backstage === false, null, { timeout: 10_000 });
-    await page.mouse.click(middle.x, middle.y);
+    const box = await iframe.boundingBox();
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
 }
 
 /** The OS file dialog in front. */
@@ -162,7 +158,17 @@ test('WordCraft\'s settings belong to the Kazo user: a new window starts with th
     const { page, errors } = await bootPage();
     const first = await openWord(page);
 
+    // Once the window has prepared its blank document (work item 2), so nothing rewrites the setting after it.
+    await first.frame.waitForFunction(async () => (await window.wordcraft.uiInspect({})).ui.backstage === false, null, { timeout: 10_000 });
     await first.frame.evaluate(() => window.wordcraft.request('ui.statusCount', { value: 'characters' }));
+    await first.frame.waitForFunction(() => {
+        for (let index = 0; index < localStorage.length; index++) {
+            if (localStorage.getItem(localStorage.key(index))?.includes('characters')) {
+                return true;
+            }
+        }
+        return false;
+    }, null, { timeout: 10_000 });
     // The window writes the file half a second after WordCraft's last write.
     await page.waitForTimeout(1_500);
     const second = await openWord(page, 2);
