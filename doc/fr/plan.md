@@ -200,7 +200,7 @@ deux fenêtres en même temps.
 | Plan d'intégration détaillé | `docs/word-plan-verification` | vérification | Fusionné (PR [#2](https://github.com/Kazo-ca/Os-App-Word/pull/2)) |
 | Kazo OS : page d'iframe d'une app installée | `fix/installed-app-iframe-page` dans `Kazo-ca/Os` | décision 10 | PR [Os#451](https://github.com/Kazo-ca/Os/pull/451) (ADR 0243), à fusionner. Kazo Word demandera la première version de l'OS publiée après la 3.3.0. |
 | 1. Solution et iframe | `word/1-solution` | plan | En cours (feu vert de Benoit le 2026-11-13). WordCraft tourne dans une fenêtre Kazo ; décisions 14 (ordre des fenêtres, correction de Kazo OS) et 15 (taille) prises ; reste le test du document qui survit et l'essai dans un OS publié. |
-| 2. Ouvrir et enregistrer | `word/2-open-save` | 1 | À faire |
+| 2. Ouvrir et enregistrer | `word/2-open-save` | 1 | Fait le 2026-11-13 (résultat dans le [plan d'intégration](integration-plan.md#chantier-2--ouvrir-et-enregistrer-word2-open-save)), PR vers `word/base`. |
 | 3. Proxy complet | `word/3-proxy` | 1 | À faire |
 | 4. Build depuis les sources | `word/4-build-from-source` | 1, forks créés | À faire |
 | 5. Store | `word/5-store` | 2, 3, 4 | À faire |

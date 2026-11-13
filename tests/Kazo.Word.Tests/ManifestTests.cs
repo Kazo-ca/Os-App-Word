@@ -35,10 +35,18 @@ public sealed class ManifestTests
     }
 
     [Fact]
-    public void Work_item_1_asks_for_no_capability_and_opens_no_file_type()
+    public void The_app_asks_for_the_dialogs_the_home_folder_and_launching_itself()
     {
-        Assert.Empty(_app.Capabilities);
-        Assert.Empty(_app.FileHandlers);
+        Assert.Equal(
+            [
+                AppCapabilities.DialogFileOpen,
+                AppCapabilities.DialogFileSave,
+                AppCapabilities.FileSystemUserHomeRead,
+                AppCapabilities.FileSystemUserHomeWrite,
+                AppCapabilities.AppsLaunch,
+            ],
+            _app.Capabilities);
+        Assert.NotEmpty(_app.FileHandlers);
     }
 
     [Fact]

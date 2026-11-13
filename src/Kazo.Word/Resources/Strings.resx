@@ -33,4 +33,52 @@
   <data name="TimedOut" xml:space="preserve">
     <value>WordCraft did not answer within {0} seconds.</value>
   </data>
+  <data name="Untitled" xml:space="preserve">
+    <value>Untitled</value>
+  </data>
+  <data name="OpenTitle" xml:space="preserve">
+    <value>Open a document</value>
+  </data>
+  <data name="SaveTitle" xml:space="preserve">
+    <value>Save the document</value>
+  </data>
+  <data name="SaveCopyTitle" xml:space="preserve">
+    <value>Save a copy</value>
+  </data>
+  <data name="FilterDocuments" xml:space="preserve">
+    <value>Documents</value>
+  </data>
+  <data name="FilterAll" xml:space="preserve">
+    <value>All files</value>
+  </data>
+  <data name="FilterFormat" xml:space="preserve">
+    <value>{0} file</value>
+  </data>
+  <data name="OpenFailed" xml:space="preserve">
+    <value>Could not open {0}: {1}</value>
+  </data>
+  <data name="NotConnected" xml:space="preserve">
+    <value>WordCraft is not running.</value>
+  </data>
+  <data name="SaveFailed" xml:space="preserve">
+    <value>{0} was not saved: {1}. The document stays modified; the next save asks where to write it.</value>
+  </data>
+  <data name="SaveCancelled" xml:space="preserve">
+    <value>{0} was not saved. The document stays modified.</value>
+  </data>
+  <data name="CopySaved" xml:space="preserve">
+    <value>Copy saved: {0}.</value>
+  </data>
+  <data name="Dismiss" xml:space="preserve">
+    <value>Dismiss</value>
+  </data>
+  <data name="CloseTitle" xml:space="preserve">
+    <value>Unsaved changes</value>
+  </data>
+  <data name="CloseUnsaved" xml:space="preserve">
+    <value>Save the changes to {0} before closing? Yes saves, No closes without saving.</value>
+  </data>
+  <data name="CloseUnanswered" xml:space="preserve">
+    <value>WordCraft does not answer, so {0} cannot be saved. Close without saving?</value>
+  </data>
 </root>
