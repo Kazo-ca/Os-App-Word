@@ -6,7 +6,9 @@ Plan établi avec Benoit dans le fil « Intégrer WordCraft dans Kazo OS »
 (2026-11-11 et 2026-11-12). Ce document fixe le but, les décisions et
 l'ordre des choses à faire ; l'avancement est en fin de page. Le plan a été
 contre-vérifié le 2026-11-12 sur le code source de WordCraft et ses issues : voir
-[`plan-verification.md`](plan-verification.md).
+[`plan-verification.md`](plan-verification.md). Le détail de la réalisation (fichiers,
+contrats, tests, critères de fin de chaque chantier) est dans
+[`integration-plan.md`](integration-plan.md).
 
 ## But
 
@@ -40,6 +42,10 @@ tests d'intégration.
 | 7 | Le mot « Word » | « Word » est une marque de Microsoft pour un traitement de texte. Benoit garde « Kazo Word » (réponse à la question 6, 2026-11-12). |
 | 8 | Bibliothèque partagée | Pour les **dépendances d'exécution communes** aux deux apps (elles partagent une base WebAssembly : egui, wgpu, `craft-libs`, polices, dictionnaires). **Décidé après les tests**, avant la création de Kazo Sheet (Benoit, 2026-11-12). À mesurer pendant les tests : deux modules wasm ne partagent pas de code Rust à l'exécution ; ce qui peut se partager, ce sont les données chargées à part (polices, dictionnaires, traductions) et notre côté C# et JavaScript. |
 | 9 | Où vivent les sources amont | Des **forks** `Kazo-ca/wordcraft`, `Kazo-ca/gridcraft` et `Kazo-ca/craft-libs` (Benoit, 2026-11-12), en sous-modules git, compilés par la CI ; les mêmes forks servent aux PR en amont. Benoit crée les forks avant le chantier 4. Vérification du 2026-11-12 : seul le fork de WordCraft est un sous-module ; Cargo télécharge `craft-libs` et le fork d'egui aux révisions épinglées, et la compilation lit aussi `craft-i18n` et `craft-fonts` à leurs révisions épinglées. Le fork `Kazo-ca/craft-libs` sert aux PR en amont. |
+| 10 | Page de l'iframe dans l'OS publié | **Corriger Kazo OS** : le service worker sert aussi la page d'une app installée (fil à part « Servir la page iframe des apps installées », dans `Kazo-ca/Os`). Kazo Word demandera la version de l'OS qui contient la correction. Benoit, 2026-11-13. |
+| 11 | Piste en amont | **Se joindre aux issues existantes** ; une issue neuve seulement pour ce qui manque ; Claude prépare les textes, Benoit les publie. Benoit, 2026-11-13. |
+| 12 | Orthographe | En anglais seulement dans la version web : **accepté pour la v1**, noté comme limite connue dans la fiche du Store. Benoit, 2026-11-13. |
+| 13 | Où vit le build de WordCraft | **Ouverte** (posée le 2026-11-13). Le Store compile avec `dotnet` seulement : il lui faut un build déjà fait. Recommandé : dans ce dépôt, sous `wwwroot/wordcraft/`. Voir le [plan d'intégration](integration-plan.md), section 3. |
 
 ## L'intégration
 
@@ -78,7 +84,7 @@ Fenêtre Kazo OS (Blazor, C#)  ⇄  proxy (page de l'iframe)  ⇄  WordCraft (.w
 - **Capacités** : `dialogs.file-open`, `dialogs.file-save`,
   `filesystem.user-home.read`, `filesystem.user-home.write`,
   `filesystem.private.read`, `filesystem.private.write`.
-- **Un point à régler dans Kazo OS** (question 10 de la
+- **Un point à régler dans Kazo OS** (décision 10, voir la
   [vérification](plan-verification.md)). Les fichiers `wwwroot/` d'une app
   installée sont servis à `_content/<assembly>/` et `.wasm` part en
   `application/wasm`, mais le service worker de l'OS publié répond à une
@@ -135,8 +141,8 @@ devenu inutile.
 
 Retirés après la vérification du 2026-11-12 : le thème et la langue de l'hôte
 (les commandes `ui.theme` et `ui.language` existent déjà) et le canvas passé en
-paramètre (inutile avec l'iframe). La façon de mener cette piste est la
-question 11 de la [vérification](plan-verification.md).
+paramètre (inutile avec l'iframe). On se joint aux issues existantes (décision 11) ; le calendrier est dans le
+[plan d'intégration](integration-plan.md), section 8.
 
 Le `AGENTS.md` de WordCraft demande une issue avant chaque PR et refuse une PR
 présentée comme écrite par un agent : Claude prépare le code et les textes dans
@@ -162,11 +168,12 @@ deux fenêtres en même temps.
 
 ## Risques
 
-- **Page de l'iframe dans l'OS publié** : pas servie aujourd'hui (question 10 de
-  la [vérification](plan-verification.md)).
+- **Page de l'iframe dans l'OS publié** : pas servie aujourd'hui ; corrigée dans
+  Kazo OS par un fil à part (décision 10).
 - **Enregistrement non confirmé** par WordCraft et **plusieurs documents dans une
   page** : traités dans la fenêtre Kazo au chantier 2.
-- **Orthographe en anglais seulement** dans la version web (question 12).
+- **Orthographe en anglais seulement** dans la version web : accepté pour la v1
+  (décision 12).
 - **Taille du build web** : environ 13 Mo de wasm (5 Mo compressés) selon
   l'amont ; mesurée au chantier 1.
 - **Alpha et rythme rapide** (une version par semaine environ) : version
@@ -187,8 +194,9 @@ deux fenêtres en même temps.
 | --- | --- | --- | --- |
 | Plan | `docs/word-plan` | rien | Fusionné (PR [#1](https://github.com/Kazo-ca/Os-App-Word/pull/1)) |
 | Vérification du plan | `docs/word-plan-verification` | plan | PR [#2](https://github.com/Kazo-ca/Os-App-Word/pull/2) |
-| Kazo OS : page d'iframe d'une app installée | à créer dans `Kazo-ca/Os` | question 10 | En attente de la réponse |
-| 1. Solution et iframe | `word/1-solution` | plan | En attente du feu vert de Benoit |
+| Plan d'intégration détaillé | `docs/word-plan-verification` | vérification | PR [#2](https://github.com/Kazo-ca/Os-App-Word/pull/2) |
+| Kazo OS : page d'iframe d'une app installée | fil à part dans `Kazo-ca/Os` | décision 10 | Lancé le 2026-11-13 |
+| 1. Solution et iframe | `word/1-solution` | plan, question 13 | En attente du feu vert de Benoit |
 | 2. Ouvrir et enregistrer | `word/2-open-save` | 1 | À faire |
 | 3. Proxy complet | `word/3-proxy` | 1 | À faire |
 | 4. Build depuis les sources | `word/4-build-from-source` | 1, forks créés | À faire |

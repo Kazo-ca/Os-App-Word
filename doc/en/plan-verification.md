@@ -4,7 +4,7 @@
 
 On 2026-11-12 Benoit asked for the [plan](plan.md) to be checked against WordCraft's source
 code and the issues of its repository, before work item 1 starts. This page says what was
-read, what is confirmed, what changes in the plan and which questions remain.
+read, what is confirmed, what changes in the plan, the questions asked and their answers.
 
 ## What was read
 
@@ -104,9 +104,12 @@ the iframe carries `allow="fullscreen; clipboard-read; clipboard-write"`.
 No effect on us: [wordcraft #4630](https://github.com/storytold/wordcraft/issues/4630) and
 #4591 (iframe from another origin, printing blocked); our iframe is same-origin.
 
-## Open questions
+## Questions and answers
 
-Asked to Benoit in the thread on 2026-11-12; ✨ marks the recommendation.
+Asked to Benoit in the thread on 2026-11-12; ✨ marks the recommendation. **Benoit took the
+three recommendations on 2026-11-13: 10 A, 11 A and 12 A** (decisions 10 to 12 of the
+[plan](plan.md)). The Kazo OS fix (10 A) is started in a separate thread; what follows is in
+the [integration plan](integration-plan.md).
 
 **10. How to serve the iframe page in the published Kazo OS?**
 
@@ -143,9 +146,9 @@ Asked to Benoit in the thread on 2026-11-12; ✨ marks the recommendation.
 
 ## Recommended order
 
-1. Decide question 10. If A: a PR in `Kazo-ca/Os`, apart from the `word/base` series.
+1. Question 10 decided (A): a PR in `Kazo-ca/Os`, apart from the `word/base` series.
 2. Work item 1 as a trial with criteria: the page loads in the iframe (in development, then
    in a published OS), WordCraft starts under COEP with WebGPU and with WebGL2, `ready`
    arrives, two windows run at once, the package is measured.
 3. Work items 2, 3 and 4 in parallel, with the corrections above.
-4. Upstream track according to question 11, blocking nothing.
+4. Upstream track according to decision 11, blocking nothing.

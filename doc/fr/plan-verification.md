@@ -4,7 +4,7 @@
 
 Benoit a demandé le 2026-11-12 de contre-vérifier le [plan](plan.md) sur le code source de
 WordCraft et sur les issues de son dépôt, avant de commencer le chantier 1. Cette page dit ce
-qui a été lu, ce qui est confirmé, ce qui change dans le plan et les questions qui restent.
+qui a été lu, ce qui est confirmé, ce qui change dans le plan, les questions posées et leurs réponses.
 
 ## Ce qui a été lu
 
@@ -107,9 +107,12 @@ Sans effet pour nous : [wordcraft #4630](https://github.com/storytold/wordcraft/
 et #4591 (iframe d'une autre origine, impression bloquée) ; notre iframe est de la même
 origine.
 
-## Questions ouvertes
+## Questions et réponses
 
-Posées à Benoit dans le fil le 2026-11-12 ; ✨ marque la recommandation.
+Posées à Benoit dans le fil le 2026-11-12 ; ✨ marque la recommandation. **Benoit a retenu
+les trois recommandations le 2026-11-13 : 10 A, 11 A et 12 A** (décisions 10 à 12 du
+[plan](plan.md)). La correction de Kazo OS (10 A) est lancée dans un fil à part ; la suite
+est dans le [plan d'intégration](integration-plan.md).
 
 **10. Comment servir la page de l'iframe dans le Kazo OS publié ?**
 
@@ -148,9 +151,9 @@ pour la v1 ?**
 
 ## Ordre conseillé
 
-1. Décider la question 10. Si A : une PR dans `Kazo-ca/Os`, à part de la série `word/base`.
+1. Question 10 décidée (A) : une PR dans `Kazo-ca/Os`, à part de la série `word/base`.
 2. Chantier 1 comme essai avec critères : la page se charge dans l'iframe (en développement,
    puis dans un OS publié), WordCraft démarre sous COEP en WebGPU et en WebGL2, `ready`
    arrive, deux fenêtres tournent en même temps, le paquet est mesuré.
 3. Chantiers 2, 3 et 4 en parallèle, avec les corrections ci-dessus.
-4. Piste en amont selon la question 11, sans rien bloquer.
+4. Piste en amont selon la décision 11, sans rien bloquer.
