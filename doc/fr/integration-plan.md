@@ -15,7 +15,7 @@ qui est livré, les tests et le critère de fin. Chaque fil de chantier part de 
 | 10 | Le service worker de Kazo OS sert la page d'iframe d'une app installée (correction dans `Kazo-ca/Os`, fil à part). Kazo Word demande la version de l'OS qui la contient. | Benoit, 2026-11-13 |
 | 11 | En amont, on se joint aux issues existantes ; une issue neuve seulement pour ce qui manque. Claude prépare les textes, Benoit les publie. | Benoit, 2026-11-13 |
 | 12 | Le correcteur orthographique en anglais seulement est accepté pour la v1, noté comme limite connue. | Benoit, 2026-11-13 |
-| 13 | **Ouverte** : où vit le build compilé de WordCraft (section 3). Recommandé : dans ce dépôt. | Posée le 2026-11-13 |
+| 13 | Le build compilé de WordCraft vit dans ce dépôt, sous `wwwroot/wordcraft/` (section 3). | Benoit, 2026-11-13 |
 
 ## 2. Les trois parties
 
@@ -42,7 +42,7 @@ qui est livré, les tests et le critère de fin. Chaque fil de chantier part de 
 Un `MessagePort` par fenêtre, remis à l'iframe à son chargement : deux fenêtres ne peuvent
 pas se mélanger, et aucun message ne passe par `window.postMessage` après le premier.
 
-## 3. Où vit le build de WordCraft (question 13)
+## 3. Où vit le build de WordCraft (décision 13)
 
 Constat du 2026-11-13 : le Store compile une app depuis le commit nommé dans `store.json`,
 avec `dotnet build -t:KazoOsPack` seulement, et ne récupère que le sous-module
@@ -63,7 +63,7 @@ déjà fait.
 - **C. Git LFS** : dépôt léger et fichiers suivis par git, mais le Store ne récupère pas les
   fichiers LFS aujourd'hui : il faudrait modifier son action de compilation.
 
-Le reste de cette page suit A.
+**Benoit a retenu A le 2026-11-13.**
 
 ## 4. Fichiers
 
@@ -187,7 +187,6 @@ Aucun chantier ne commence sans le feu vert de Benoit.
 | --- | --- | --- |
 | Correction du service worker de Kazo OS (décision 10) | Fil « Servir la page iframe des apps installées » | PR [Os#451](https://github.com/Kazo-ca/Os/pull/451) (ADR 0243) prête le 2026-11-13, à fusionner. Rien à changer côté app. Ne bloque que le chantier 5. |
 | Forks `Kazo-ca/wordcraft`, `Kazo-ca/craft-libs`, `Kazo-ca/gridcraft` (décision 9) | Benoit, par le coordinateur | Avant le chantier 4. |
-| Réponse à la question 13 | Benoit | Avant le chantier 1. |
 
 ### Chantier 1 : solution et iframe (`word/1-solution`)
 

@@ -44,7 +44,7 @@ integration tests.
 | 10 | Iframe page in the published OS | **Fix Kazo OS**: the service worker also serves an installed app's page (separate thread "Servir la page iframe des apps installées", in `Kazo-ca/Os`). Kazo Word will require the OS version that has the fix. Benoit, 2026-11-13. |
 | 11 | Upstream track | **Join the existing issues**; a new issue only for what is missing; Claude prepares the texts, Benoit posts them. Benoit, 2026-11-13. |
 | 12 | Spelling | In English only in the web version: **accepted for v1**, noted as a known limit in the Store listing. Benoit, 2026-11-13. |
-| 13 | Where the WordCraft build lives | **Open** (asked 2026-11-13). The Store builds with `dotnet` only: it needs a build already made. Recommended: in this repository, under `wwwroot/wordcraft/`. See the [integration plan](integration-plan.md), section 3. |
+| 13 | Where the WordCraft build lives | **In this repository**, under `wwwroot/wordcraft/`, with a provenance file (version, commit, SHA-256), updated through a PR. The Store builds with `dotnet` only: it needs a build already made. See the [integration plan](integration-plan.md), section 3. Benoit, 2026-11-13. |
 
 ## The integration
 
@@ -189,7 +189,7 @@ save it, reopen it; Save As; two windows at once.
 | Check of the plan | `docs/word-plan-verification` | plan | PR [#2](https://github.com/Kazo-ca/Os-App-Word/pull/2) |
 | Detailed integration plan | `docs/word-plan-verification` | check | PR [#2](https://github.com/Kazo-ca/Os-App-Word/pull/2) |
 | Kazo OS: iframe page of an installed app | `fix/installed-app-iframe-page` in `Kazo-ca/Os` | decision 10 | PR [Os#451](https://github.com/Kazo-ca/Os/pull/451) (ADR 0243), to merge. Kazo Word will require the first OS version published after 3.3.0. |
-| 1. Solution and iframe | `word/1-solution` | plan, question 13 | Waiting for Benoit's go |
+| 1. Solution and iframe | `word/1-solution` | plan | Waiting for Benoit's go |
 | 2. Open and save | `word/2-open-save` | 1 | To do |
 | 3. Full proxy | `word/3-proxy` | 1 | To do |
 | 4. Build from source | `word/4-build-from-source` | 1, forks created | To do |

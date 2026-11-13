@@ -15,7 +15,7 @@ tests and the completion criterion. Each work-item thread starts from this page.
 | 10 | The Kazo OS service worker serves the iframe page of an installed app (fix in `Kazo-ca/Os`, separate thread). Kazo Word requires the OS version that has it. | Benoit, 2026-11-13 |
 | 11 | Upstream, we join the existing issues; a new issue only for what is missing. Claude prepares the texts, Benoit posts them. | Benoit, 2026-11-13 |
 | 12 | The spell checker in English only is accepted for v1, noted as a known limit. | Benoit, 2026-11-13 |
-| 13 | **Open**: where the built WordCraft lives (section 3). Recommended: in this repository. | Asked 2026-11-13 |
+| 13 | The built WordCraft lives in this repository, under `wwwroot/wordcraft/` (section 3). | Benoit, 2026-11-13 |
 
 ## 2. The three parts
 
@@ -42,7 +42,7 @@ tests and the completion criterion. Each work-item thread starts from this page.
 One `MessagePort` per window, handed to the iframe when it loads: two windows cannot mix, and
 no message goes through `window.postMessage` after the first one.
 
-## 3. Where the WordCraft build lives (question 13)
+## 3. Where the WordCraft build lives (decision 13)
 
 Finding of 2026-11-13: the Store builds an app from the commit named in `store.json`, with
 `dotnet build -t:KazoOsPack` only, and fetches only the `external/KazoOs` submodule (the
@@ -62,7 +62,7 @@ Store therefore cannot build WordCraft: it needs a build already made.
 - **C. Git LFS**: a light repository and files tracked by git, but the Store does not fetch
   LFS files today: its build action would have to change.
 
-The rest of this page follows A.
+**Benoit chose A on 2026-11-13.**
 
 ## 4. Files
 
@@ -184,7 +184,6 @@ work item starts without Benoit's go.
 | --- | --- | --- |
 | Fix of the Kazo OS service worker (decision 10) | Thread "Servir la page iframe des apps installées" | PR [Os#451](https://github.com/Kazo-ca/Os/pull/451) (ADR 0243) ready on 2026-11-13, to merge. Nothing to change on the app side. Only blocks work item 5. |
 | Forks `Kazo-ca/wordcraft`, `Kazo-ca/craft-libs`, `Kazo-ca/gridcraft` (decision 9) | Benoit, through the coordinator | Before work item 4. |
-| Answer to question 13 | Benoit | Before work item 1. |
 
 ### Work item 1: solution and iframe (`word/1-solution`)
 
