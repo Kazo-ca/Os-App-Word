@@ -57,6 +57,9 @@ export async function runCommand(api, command) {
     }
 }
 
+/** Path of WordCraft's provenance file, relative to this page; it names the glue and the .wasm. */
+export const BuildManifestPath = "../wordcraft/wordcraft.json";
+
 /**
  * Loads WordCraft: reads the provenance file, imports the wasm-bindgen glue it names, and starts
  * the .wasm. WordCraft finds the canvas itself (id wordcraft_canvas, data-host="page").

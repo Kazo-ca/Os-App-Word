@@ -77,3 +77,8 @@ test("a result without a value carries null", async () => {
 
     assert.deepEqual(result, { type: "result", id: 5, ok: true, value: null });
 });
+
+test("the proxy still names WordCraft's provenance file next to the iframe page", async () => {
+    const { BuildManifestPath } = await import("../../src/Kazo.Word/wwwroot/host/word-proxy.js");
+    assert.equal(BuildManifestPath, "../wordcraft/wordcraft.json");
+});
