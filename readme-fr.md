@@ -70,9 +70,9 @@ l'équipe ArtCraft et ne sont pas utilisés par Kazo Word.
 
 ## Essayer
 
-<!-- Lien « Ouvrir dans Kazo OS » : https://os.kazo.ca/?autolaunch=ca.kazo.word va ici quand Kazo OS le prendra en charge. -->
+[Ouvrir Kazo Word dans Kazo OS](https://os.kazo.ca/?autolaunch=ca.kazo.word) : le lien démarre Kazo OS, installe l'app depuis le Store officiel et l'ouvre.
 
-Ouvrez [Kazo OS](https://os.kazo.ca/) et installez Kazo Word depuis le **Kazo OS Store** (catégorie Productivité), ou dans le Terminal de Kazo OS, en administrateur : `sudo kazopkg install Kazo-ca/Os-App-Word`.
+Ou ouvrez [Kazo OS](https://os.kazo.ca/) et installez Kazo Word depuis le **Kazo OS Store** (catégorie Productivité), ou dans le Terminal de Kazo OS, en administrateur : `sudo kazopkg install Kazo-ca/Os-App-Word`.
 
 ## À propos de Kazo OS
 
