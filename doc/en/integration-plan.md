@@ -19,7 +19,7 @@ tests and the completion criterion. Each work-item thread starts from this page.
 | 14 | Kazo OS keeps a stable order of the windows in the page; a window coming to the front no longer reloads its iframe (fix in `Kazo-ca/Os`). | Benoit, 2026-11-13 |
 | 15 | The real `.wasm` is 61 MB: decision 13 stays. | Benoit, 2026-11-13 |
 | 16 | No Kazo menu for v1: WordCraft's File tab is enough (the SDK gives no window menu yet). | Benoit, 2026-11-13 |
-| 17 | Kazo OS raises its maximum file size (16 MiB today, ADR 0094) so the 60 MB `.wasm` installs: new ADR and version 3.4.0 (separate thread of `Kazo-ca/Os`). | Benoit, 2026-11-13 |
+| 17 | Kazo OS raises its maximum file size (16 MiB today, ADR 0094) so the 60 MB `.wasm` installs: Kazo OS ADR 0245, 128 MiB per file, released in Kazo OS 3.3.2. | Benoit, 2026-11-13 |
 
 ## 2. The three parts
 
@@ -199,7 +199,7 @@ work item starts without Benoit's go.
 | --- | --- | --- |
 | Stable order of the windows in the page (decision 14) | Thread "Garder l'ordre des fenêtres stable" | Done: PR [Os#452](https://github.com/Kazo-ca/Os/pull/452) (ADR 0244), released in Kazo OS 3.3.1 on 2026-11-13. |
 | Fix of the Kazo OS service worker (decision 10) | Thread "Servir la page iframe des apps installées" | Done: PR [Os#451](https://github.com/Kazo-ca/Os/pull/451) (ADR 0243), released in Kazo OS 3.3.1 on 2026-11-13. Kazo Word requires Kazo OS 3.3.1 or later. |
-| A file over 16 MiB in Kazo OS (decision 17) | Thread "Relever la taille maximale de fichier" | In progress: 128 MiB per file, PR [Os#455](https://github.com/Kazo-ca/Os/pull/455) (ADR 0245), to merge, then Kazo OS 3.4.0. On a trimmed publish of that branch, `sudo kazopkg install Kazo-ca/Os-App-Word` succeeds in 15.6 s and WordCraft shows. The OS file system refuses any file over 16 MiB (ADR 0094), and the `.wasm` is 60 MB: installing in a published OS fails. Blocks work item 5. |
+| A file over 16 MiB in Kazo OS (decision 17) | Thread "Relever la taille maximale de fichier" | Done: 128 MiB per file, PR [Os#455](https://github.com/Kazo-ca/Os/pull/455) (ADR 0245), released in Kazo OS 3.3.2 on 2026-11-13. Kazo Word requires Kazo OS 3.3.2 or later. |
 | Forks `Kazo-ca/wordcraft`, `Kazo-ca/craft-libs`, `Kazo-ca/gridcraft` (decision 9) | Benoit, through the coordinator | Before work item 4. |
 
 ### Work item 1: solution and iframe (`word/1-solution`)
@@ -240,12 +240,17 @@ A trial that must prove WordCraft starts in a Kazo window.
   the document is gone.
 - Kazo OS 3.3.1 (2026-11-13) fixes both: a document survives when its window comes to the front
   and goes back behind (Playwright journey, failing on 3.3.0, passing on 3.3.1), and the published
-  service worker serves the iframe page. The submodule is on `v3.3.1`, the minimum OS version.
+  service worker serves the iframe page. The submodule moved to `v3.3.1`.
   The OS also brings to the front a window that gets the focus through a click in its iframe; the
   `pointerdown` that `word-host.js` replays on the iframe stays, it only has the same effect.
 - **Published OS (3.3.1)**: `sudo kazopkg install Kazo-ca/Os-App-Word` reads the package, then
   fails on the `.wasm`: `FileTooLarge`. The Kazo OS file system refuses any file over 16 MiB
   (ADR 0094), and the `.wasm` is 60 MB (22 MB gzipped). Decision 17: Kazo OS raises its limit.
+- **Published OS (3.3.2, 2026-11-13)**: with 128 MiB per file (ADR 0245, decision 17),
+  `sudo kazopkg install Kazo-ca/Os-App-Word` installs the package (22.8 MB) in 16 s; Kazo Word
+  opens from the menu, WordCraft runs after 8 s in the page served by the published service
+  worker (no second Kazo OS), and typed text reaches the document, with WebGPU and with WebGL 2
+  (`launch ca.kazo.word --webgl`). The submodule is on `v3.3.2`, the minimum OS version.
 
 ### Work item 2: open and save (`word/2-open-save`)
 
@@ -432,7 +437,7 @@ Each accepted proposal removes a workaround from the proxy.
 | The Store analyses the app's JavaScript (CodeQL) | WordCraft's generated `.js` will be analysed: to check in work item 5, before the tag. |
 | Memory: each window loads its own WordCraft | Measured in work item 1: about 130 MB for the first window, 25 MB per extra window, without a document. To measure again with large documents in work item 2. |
 | A window coming to the front reloads its iframe (Kazo OS moves its element in the page) | Decision 14: Kazo OS keeps a stable order of the windows in the page, stacking staying in `z-index` (separate thread of `Kazo-ca/Os`). Released in Kazo OS 3.3.1; the journey "the document survives when its window comes to the front" checks it. |
-| Kazo OS refuses a file over 16 MiB (ADR 0094), the `.wasm` is 60 MB | Decision 17: Kazo OS raises its limit (new ADR, version 3.4.0). Blocks the install and work item 5 until then. |
+| Kazo OS refuses a file over 16 MiB (ADR 0094), the `.wasm` is 60 MB | Decision 17: Kazo OS 3.3.2 accepts 128 MiB per file (ADR 0245); Kazo Word installs in the published OS. |
 | The `.wasm` is 61 MB, not 13 MB | Decision 15: decision 13 stays. |
 | WordCraft settings shared by every Kazo user (same origin) | Work item 3 trial held: settings in `~/.config/ca.kazo.word/`. Added fonts (IndexedDB) stay shared. |
 | No GPU | Clear error screen (`failed`). |
