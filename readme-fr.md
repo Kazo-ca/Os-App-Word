@@ -15,18 +15,38 @@ travers un petit proxy. En cours de développement : voir le [plan](doc/fr/plan.
 | `tests/proxy` | Tests du proxy de l'iframe (avec un faux WordCraft) et du module côté OS, sous node |
 | `tests/e2e` | Parcours dans l'hôte Kazo OS avec Playwright : démarrage, saisie, WebGPU et WebGL 2, deux fenêtres |
 | `tools/vendor-wordcraft.sh` | Place un build de WordCraft dans `src/Kazo.Word/wwwroot/wordcraft/` avec sa provenance |
+| `tools/build-wordcraft.sh` | Compile WordCraft depuis `external/wordcraft` et le place dans l'app |
 | `external/KazoOs` | Le dépôt Kazo OS en sous-module git, sur un tag de release |
+| `external/wordcraft` | Notre fork de WordCraft (`Kazo-ca/wordcraft`) en sous-module git : utile seulement pour compiler WordCraft |
 | `store/` | Ce que montre le Kazo OS Store : icône (PNG 256×256), descriptions courtes, descriptions, `store.json` |
 
 ## Le build de WordCraft
 
-`src/Kazo.Word/wwwroot/wordcraft/` n'est jamais modifié à la main (décision 13 du plan). Pour
-changer de version de WordCraft, changez la version et le SHA-256 épinglés en tête de
-`tools/vendor-wordcraft.sh`, lancez-le, et validez le dossier avec son `wordcraft.json` dans une PR :
+`src/Kazo.Word/wwwroot/wordcraft/` n'est jamais modifié à la main (décision 13 du plan). Il est
+compilé depuis le sous-module `external/wordcraft`, notre fork de WordCraft, et son
+`wordcraft.json` nomme le commit du fork (un test C# vérifie que c'est celui du sous-module).
+
+Pour changer de version de WordCraft : déplacez le sous-module sur un commit du fork (pour une
+release, la branche `kazo/v<version>` du fork, faite depuis le tag amont) dans une PR. Le workflow
+**Build WordCraft** le compile sur cette PR. Une fois fusionnée, lancez **Build WordCraft** depuis
+l'onglet Actions sur cette branche : il compile, fait tourner la CI sur le résultat et ouvre une
+PR qui remplace le dossier.
+
+Le même build sur un ordinateur (Rust stable avec `wasm32-unknown-unknown`, Trunk 0.21.14, et
+`storytold/craft-i18n` et `storytold/craft-fonts` aux révisions qu'épingle le sous-module ; le
+script les vérifie) :
+
+```bash
+git submodule update --init external/wordcraft
+CRAFT_I18N_DIR=<craft-i18n> CRAFT_FONTS_DIR=<craft-fonts> tools/build-wordcraft.sh
+```
+
+`tools/vendor-wordcraft.sh` prend aussi le zip officiel de WordCraft (la source jusqu'au chantier 4) :
 
 ```bash
 tools/vendor-wordcraft.sh                 # télécharge le zip officiel épinglé et le vérifie
 tools/vendor-wordcraft.sh --zip <fichier> # pareil, depuis un zip déjà téléchargé
+tools/vendor-wordcraft.sh --dir <dossier> # un dossier compilé depuis external/wordcraft par packaging/web/package.sh
 ```
 
 Le `.wasm` fait 61 Mo : GitHub avertit au push, et l'accepte.

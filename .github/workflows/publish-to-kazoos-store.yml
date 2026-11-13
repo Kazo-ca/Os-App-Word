@@ -30,8 +30,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: true
+
+      # Only the Kazo OS submodule: external/wordcraft is only needed to compile WordCraft.
+      - name: Fetch the Kazo OS submodule
+        run: git submodule update --init --depth 1 external/KazoOs
 
       - uses: actions/setup-dotnet@v4
         with:

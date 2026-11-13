@@ -106,7 +106,8 @@ tests/proxy/                        node --test, avec un faux WordCraft
 tests/e2e/                          Playwright (node --test), dans l'hôte de débogage
 tools/vendor-wordcraft.sh           zip épinglé ou dossier compilé → wwwroot/wordcraft/
 external/KazoOs                     sous-module (du modèle)
-external/wordcraft                  sous-module du fork (chantier 4 seulement)
+external/wordcraft                  sous-module du fork, utile seulement pour compiler WordCraft
+tools/build-wordcraft.sh            compile external/wordcraft, puis vendor-wordcraft.sh --dir
 THIRD-PARTY-NOTICES.md              chantier 5
 ```
 
@@ -347,6 +348,49 @@ Un essai qui doit prouver que WordCraft démarre dans une fenêtre Kazo.
   traductions, ce qui pourrait être chargé à part.
 - **Terminé quand** : une montée de version de WordCraft se fait en changeant le commit du
   sous-module et en lançant le workflow.
+
+**Résultat (2026-11-13).**
+
+- Sous-module `external/wordcraft` sur le fork `Kazo-ca/wordcraft`, au commit de la release
+  0.18.1 (`079f478b`, « Merge tested main for v0.18.1 »). Ce commit est sur la branche `release`
+  en amont, que le fork n'avait pas copiée : il est gardé dans le fork par la branche
+  `kazo/v0.18.1`, notée dans `.gitmodules`. Une montée de version fait pareil :
+  une branche `kazo/v<version>` du fork depuis le tag amont, puis le sous-module dessus.
+- `tools/build-wordcraft.sh` compile comme la release amont : il lit les révisions de
+  `craft-i18n` (`craft-i18n.rev`) et de `craft-fonts` (`craft-fonts-ref` du workflow amont)
+  dans le sous-module et refuse d'autres checkouts, exige Trunk 0.21.14 et la cible wasm32, lance
+  `packaging/web/package.sh` de WordCraft (licences et licences de polices comprises), avec la
+  date du commit comme date de build, puis `tools/vendor-wordcraft.sh --dir`.
+- `tools/vendor-wordcraft.sh --dir <dossier>` : la source « dossier compilé ». `wordcraft.json`
+  dit alors `"kind": "source-build"`, le dépôt, le commit du sous-module (qui doit être propre),
+  les révisions de `craft-i18n` et `craft-fonts`, `rustc` et `trunk`. Un test xUnit vérifie que
+  ce commit est celui du sous-module dans l'index git : déplacer le sous-module sans recompiler
+  (ou l'inverse) échoue.
+- Workflow `build-wordcraft.yml` : lancé à la main, il compile, pousse le build sur une branche
+  `wordcraft/build-<version>-<commit>`, fait tourner toute la CI sur cette branche (`ci.yml`
+  appelé, puisqu'un push fait avec le jeton du workflow ne lance aucun workflow) puis ouvre la PR.
+  Sur une PR qui touche le sous-module, les scripts ou ce fichier, il compile seulement. GitHub ne
+  propose le bouton « Run workflow » qu'une fois le fichier sur `main` : d'ici là, le build se
+  fait avec le script, et la PR le vérifie. L'ouverture de la PR demande le réglage « Allow GitHub
+  Actions to create and approve pull requests » ; sans lui, le workflow donne le lien pour l'ouvrir.
+- La CI (et les deux workflows de publication) ne récupère plus que le sous-module Kazo OS ;
+  le Store ne récupère toujours que lui.
+- Le build de cette PR, fait avec Rust 1.100.0 : mêmes fichiers que le zip officiel, mêmes
+  licences, même module JavaScript à part les suffixes générés. Le `.wasm` n'est pas identique
+  octet pour octet (version de Rust et crédits rafraîchis par la release amont). Avec un Rust plus
+  ancien (1.97), le module importait quelques fonctions WebGPU et vidéo de plus : le workflow prend le Rust
+  stable du jour, comme la release amont.
+- Tests sur ce build : 125 xUnit, 31 tests du proxy, 12 parcours Playwright. Un parcours
+  (insérer une image depuis les fichiers Kazo) a échoué une fois dans la suite complète, puis est
+  passé seul et à la reprise de la suite : instable, pas lié au build.
+- Mesures pour la décision 8 : `.wasm` 60 242 518 octets (22,2 Mo en gzip -9), module
+  JavaScript 182 Ko. Données incluses dans le `.wasm`, d'après les fichiers sources : traductions
+  de l'interface environ 4,6 Mo (51 langues), données d'orthographe et de césure environ 3,0 Mo,
+  polices environ 1,1 Mo (Noto Sans Arabic et Georgian ; les autres polices ne sont pas dans le
+  build web). Environ 9 Mo de données pourraient donc être chargées à part ; le reste, environ
+  51 Mo, est du code, que deux modules wasm ne partagent pas.
+- Le nom et le logo ArtCraft restent : aucune modification de WordCraft n'est encore livrée.
+- Compilation ici : environ 6 minutes sur 4 cœurs, sans cache.
 
 ### Chantier 5 : Store (`word/5-store`)
 

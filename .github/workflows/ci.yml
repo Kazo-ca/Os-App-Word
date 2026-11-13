@@ -4,17 +4,24 @@ name: CI
 # external/KazoOs submodule) and runs every test suite: C# unit tests, the iframe proxy and the OS-side module under
 # node, and the end-to-end runs of the app inside the Kazo OS host (Playwright, Chromium).
 # Pushes to the integration branches, and every PR (work items are pushed and tested through
-# their PR, so a work-item push does not run twice).
+# their PR, so a work-item push does not run twice). The Build WordCraft workflow also calls it on
+# the branch it pushes, since a push made with the workflow token starts no workflow.
 on:
   push:
     branches: [main, "word/base"]
   pull_request:
+  workflow_call:
+    inputs:
+      ref:
+        description: Branch to check out and test
+        type: string
+        required: true
 
 permissions:
   contents: read
 
 concurrency:
-  group: "ci-${{ github.ref }}"
+  group: "ci-${{ inputs.ref || github.ref }}"
   cancel-in-progress: true
 
 jobs:
@@ -22,10 +29,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
-      - name: Checkout (with the Kazo OS submodule)
+      - name: Checkout
         uses: actions/checkout@v6
         with:
-          submodules: true
+          ref: ${{ inputs.ref || '' }}
+
+      # Only the Kazo OS submodule. external/wordcraft (WordCraft's sources) is only needed to
+      # compile WordCraft (build-wordcraft.yml); the tests use the build in wwwroot/wordcraft/.
+      - name: Fetch the Kazo OS submodule
+        run: git submodule update --init --depth 1 external/KazoOs
 
       - name: Setup .NET 10
         uses: actions/setup-dotnet@v5

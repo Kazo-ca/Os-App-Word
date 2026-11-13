@@ -105,7 +105,8 @@ tests/proxy/                        node --test, with a fake WordCraft
 tests/e2e/                          Playwright (node --test), in the debug host
 tools/vendor-wordcraft.sh           pinned zip or built folder → wwwroot/wordcraft/
 external/KazoOs                     submodule (from the template)
-external/wordcraft                  submodule of the fork (work item 4 only)
+external/wordcraft                  submodule of the fork, only needed to compile WordCraft
+tools/build-wordcraft.sh            builds external/wordcraft, then vendor-wordcraft.sh --dir
 THIRD-PARTY-NOTICES.md              work item 5
 ```
 
@@ -339,6 +340,49 @@ A trial that must prove WordCraft starts in a Kazo window.
   translations, what could be loaded separately.
 - **Done when**: a WordCraft version upgrade is done by changing the submodule commit and
   running the workflow.
+
+**Result (2026-11-13).**
+
+- Submodule `external/wordcraft` on the `Kazo-ca/wordcraft` fork, at the commit of release
+  0.18.1 (`079f478b`, "Merge tested main for v0.18.1"). That commit is on the upstream `release`
+  branch, which the fork had not copied: the fork keeps it with the `kazo/v0.18.1` branch, named
+  in `.gitmodules`. A version upgrade does the same: a `kazo/v<version>` branch of the fork from
+  the upstream tag, then the submodule on it.
+- `tools/build-wordcraft.sh` builds like the upstream release: it reads the revisions of
+  `craft-i18n` (`craft-i18n.rev`) and `craft-fonts` (`craft-fonts-ref` of the upstream workflow)
+  from the submodule and refuses other checkouts, requires Trunk 0.21.14 and the wasm32 target,
+  runs WordCraft's `packaging/web/package.sh` (licences and font licences included), with the
+  commit date as build date, then `tools/vendor-wordcraft.sh --dir`.
+- `tools/vendor-wordcraft.sh --dir <folder>`: the "built folder" source. `wordcraft.json` then
+  says `"kind": "source-build"`, the repository, the submodule's commit (which must be clean),
+  the `craft-i18n` and `craft-fonts` revisions, `rustc` and `trunk`. An xUnit test checks that
+  this commit is the submodule's commit in git's index: moving the submodule without rebuilding
+  (or the reverse) fails.
+- Workflow `build-wordcraft.yml`: run by hand, it builds, pushes the build on a branch
+  `wordcraft/build-<version>-<commit>`, runs the whole CI on that branch (`ci.yml` called, since a
+  push made with the workflow token starts no workflow), then opens the PR. On a PR that touches
+  the submodule, the scripts or this file, it only builds. GitHub shows the "Run workflow" button
+  only once the file is on `main`: until then the build is made with the script, and the PR
+  checks it. Opening the PR needs the "Allow GitHub Actions to create and approve pull requests"
+  setting; without it, the workflow gives the link to open it.
+- CI (and the two publishing workflows) now fetch only the Kazo OS submodule; the Store still
+  fetches only that one.
+- The build of this PR, made with Rust 1.100.0: same files as the official zip, same licences,
+  same JavaScript module apart from generated suffixes. The `.wasm` is not byte-identical (Rust
+  version, and credits refreshed by the upstream release). With an older Rust (1.97) the module
+  imported a few more WebGPU and video functions: the workflow takes the current stable Rust, as the
+  upstream release does.
+- Tests on this build: 125 xUnit, 31 proxy tests, 12 Playwright journeys. One journey (insert a
+  picture from the Kazo files) failed once in the full suite, then passed alone and in the
+  rerun of the suite: flaky, not related to the build.
+- Measurements for decision 8: `.wasm` 60,242,518 bytes (22.2 MB with gzip -9), JavaScript
+  module 182 KB. Data inside the `.wasm`, from the source files: interface translations about
+  4.6 MB (51 languages), spelling and hyphenation data about 3.0 MB, fonts about 1.1 MB (Noto Sans
+  Arabic and Georgian; the other fonts are not in the web build). About 9 MB of data could
+  therefore be loaded separately; the rest, about 51 MB, is code, which two wasm modules do not
+  share.
+- The ArtCraft name and logo stay: no change to WordCraft ships yet.
+- Build here: about 6 minutes on 4 cores, no cache.
 
 ### Work item 5: Store (`word/5-store`)
 
