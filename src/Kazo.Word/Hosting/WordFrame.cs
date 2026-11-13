@@ -9,7 +9,21 @@ namespace Kazo.Word.Hosting;
 /// <param name="Language">The user's language, two letters (WordCraft uses it from work item 3).</param>
 /// <param name="WebGl">Forces WordCraft's WebGL 2 renderer (<c>?webgl</c>) instead of WebGPU.</param>
 /// <param name="Title">Accessible name of the iframe.</param>
-public sealed record FrameOptions(string Author, string Language, bool WebGl, string Title);
+/// <param name="ReservedKeys">Chords the iframe gives back instead of WordCraft (<see cref="Hosting.ReservedKeys"/>).</param>
+/// <param name="Settings">WordCraft's storage for this Kazo user; <see langword="null"/> keeps the browser's own.</param>
+public sealed record FrameOptions(
+    string Author,
+    string Language,
+    bool WebGl,
+    string Title,
+    IReadOnlyList<ReservedKey>? ReservedKeys = null,
+    IReadOnlyDictionary<string, string>? Settings = null);
+
+/// <summary>One file handed to WordCraft's file picker.</summary>
+/// <param name="Name">The file name, with its extension.</param>
+/// <param name="Type">The media type, empty when unknown.</param>
+/// <param name="Bytes">The content.</param>
+public sealed record PickedFile(string Name, string Type, byte[] Bytes);
 
 /// <summary>
 /// The C# side of one iframe: it starts <c>wwwroot/js/word-host.js</c> in an element of the
@@ -43,6 +57,18 @@ public sealed class WordFrame : IAsyncDisposable
     /// <summary>Raised with the error when WordCraft did not start.</summary>
     public event Func<string?, Task>? Failed;
 
+    /// <summary>Raised when a reserved chord meant for the window (<see cref="ReservedKeyTarget.App"/>) was typed.</summary>
+    public event Func<ReservedKey, Task>? KeyPressed;
+
+    /// <summary>Raised when WordCraft opened its file picker; answer with <see cref="AnswerPickAsync"/>.</summary>
+    public event Func<Pickers.PickRequest, Task>? PickRequested;
+
+    /// <summary>Raised when WordCraft wrote a setting: its key, and its value (<see langword="null"/> when removed).</summary>
+    public event Func<string, string?, Task>? SettingChanged;
+
+    /// <summary>Raised with <c>light</c> or <c>dark</c> when the OS theme's color scheme changed.</summary>
+    public event Func<string, Task>? SchemeChanged;
+
     /// <summary>Creates the iframe in <paramref name="container"/>; WordCraft starts loading in it.</summary>
     /// <param name="container">The element of the window that holds the iframe.</param>
     /// <param name="options">Author, language, renderer and title.</param>
@@ -58,7 +84,15 @@ public sealed class WordFrame : IAsyncDisposable
             cancellationToken,
             container,
             _self,
-            new { author = options.Author, language = options.Language, webgl = options.WebGl, title = options.Title });
+            new Dictionary<string, object?>
+            {
+                ["author"] = options.Author,
+                ["language"] = options.Language,
+                ["webgl"] = options.WebGl,
+                ["title"] = options.Title,
+                ["reservedKeys"] = (options.ReservedKeys ?? []).Select(key => key.ToMessage()).ToArray(),
+                ["settings"] = options.Settings,
+            });
     }
 
     /// <summary>Gives the keyboard to WordCraft (the window was activated, or WordCraft is ready).</summary>
@@ -133,8 +167,106 @@ public sealed class WordFrame : IAsyncDisposable
     {
         FrameMessages.Ready => Ready?.Invoke(value) ?? Task.CompletedTask,
         FrameMessages.Failed => Failed?.Invoke(value) ?? Task.CompletedTask,
+        FrameMessages.Key => OnKeyAsync(value),
+        FrameMessages.Pick => Pickers.PickRequest.FromJson(value) is { } pick && PickRequested is { } picked
+            ? picked(pick)
+            : Task.CompletedTask,
+        FrameMessages.Setting => OnSettingAsync(value),
+        FrameMessages.Scheme => value is { } scheme ? SchemeChanged?.Invoke(scheme) ?? Task.CompletedTask : Task.CompletedTask,
         _ => Task.CompletedTask,
     };
+
+    /// <summary>Answers WordCraft's file picker (message <c>picked</c>).</summary>
+    /// <param name="id">The pick's id (<see cref="Pickers.PickRequest.Id"/>).</param>
+    /// <param name="files">The chosen files; <see langword="null"/> or empty when the user cancelled.</param>
+    /// <returns>A task that completes once the answer is sent.</returns>
+    public async Task AnswerPickAsync(int id, IReadOnlyList<PickedFile>? files)
+    {
+        if (_frame is null)
+        {
+            return;
+        }
+
+        try
+        {
+            object? payload = files is { Count: > 0 }
+                ? files.Select(file => new Dictionary<string, object> { ["name"] = file.Name, ["type"] = file.Type, ["bytes"] = file.Bytes }).ToArray()
+                : null;
+            await _frame.InvokeVoidAsync("answerPick", id, payload);
+        }
+        catch (JSDisconnectedException)
+        {
+            // The window is closing: WordCraft goes with it.
+        }
+    }
+
+    /// <summary>Reads the color scheme of the OS theme around the window.</summary>
+    /// <returns><c>light</c> or <c>dark</c>.</returns>
+    public async Task<string> GetColorSchemeAsync()
+    {
+        if (_frame is null)
+        {
+            return "dark";
+        }
+
+        try
+        {
+            return await _frame.InvokeAsync<string>("colorScheme");
+        }
+        catch (Exception exception) when (exception is JSException or JSDisconnectedException)
+        {
+            return "dark";
+        }
+    }
+
+    private Task OnKeyAsync(string? json)
+    {
+        if (KeyPressed is null || string.IsNullOrWhiteSpace(json))
+        {
+            return Task.CompletedTask;
+        }
+
+        try
+        {
+            using JsonDocument document = JsonDocument.Parse(json);
+            JsonElement root = document.RootElement;
+            string? Text(string name) => root.TryGetProperty(name, out JsonElement value) && value.ValueKind == JsonValueKind.String ? value.GetString() : null;
+            bool Flag(string name) => root.TryGetProperty(name, out JsonElement value) && value.ValueKind == JsonValueKind.True;
+            ReservedKey key = new(Text("key"), Text("code"), Flag("ctrl"), Flag("alt"), Flag("shift"), Flag("meta"), ReservedKeyTarget.App);
+            return KeyPressed(key);
+        }
+        catch (JsonException)
+        {
+            return Task.CompletedTask;
+        }
+    }
+
+    private Task OnSettingAsync(string? json)
+    {
+        if (SettingChanged is null || string.IsNullOrWhiteSpace(json))
+        {
+            return Task.CompletedTask;
+        }
+
+        try
+        {
+            using JsonDocument document = JsonDocument.Parse(json);
+            JsonElement root = document.RootElement;
+            if (!root.TryGetProperty("key", out JsonElement key) || key.ValueKind != JsonValueKind.String)
+            {
+                return Task.CompletedTask;
+            }
+
+            string? value = root.TryGetProperty("value", out JsonElement text) && text.ValueKind == JsonValueKind.String
+                ? text.GetString()
+                : null;
+            return SettingChanged(key.GetString()!, value);
+        }
+        catch (JsonException)
+        {
+            return Task.CompletedTask;
+        }
+    }
 
     // A JSException message carries the JavaScript stack after the first line.
     private static string FirstLine(string message)

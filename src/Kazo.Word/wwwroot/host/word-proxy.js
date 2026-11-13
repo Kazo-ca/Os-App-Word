@@ -8,7 +8,17 @@
 // from the window calls WordCraft's page API (`window.wordcraft.request`) and is answered by a
 // `result` with the same id.
 //
+// Work item 3 adds, each in its own module: WordCraft's file picker goes to the window (`pick`,
+// `picked`; file-picker.js), the chords the window reserves go back to it (`key`; reserved-keys.js),
+// and WordCraft's localStorage holds the Kazo user's settings (`setting`; settings-store.js). For
+// the settings to be there when WordCraft reads them, WordCraft is downloaded and compiled at once
+// but started only once `init` arrived.
+//
 // The proxy decides nothing: every decision is in the window's C#.
+
+import { interceptFilePicker } from "./file-picker.js";
+import { forwardReservedKeys } from "./reserved-keys.js";
+import { installStorage, MemoryStorage } from "./settings-store.js";
 
 /** Names of the messages on the port (section 5 of the integration plan). */
 export const MessageTypes = Object.freeze({
@@ -21,6 +31,10 @@ export const MessageTypes = Object.freeze({
     focus: "focus",
     command: "command",
     result: "result",
+    pick: "pick",
+    picked: "picked",
+    key: "key",
+    setting: "setting",
 });
 
 /** How long a `command` may wait for WordCraft when the window gives no time, in milliseconds. */
@@ -61,20 +75,49 @@ export async function runCommand(api, command) {
 export const BuildManifestPath = "../wordcraft/wordcraft.json";
 
 /**
- * Loads WordCraft: reads the provenance file, imports the wasm-bindgen glue it names, and starts
- * the .wasm. WordCraft finds the canvas itself (id wordcraft_canvas, data-host="page").
+ * Downloads and compiles WordCraft without starting it: reads the provenance file, imports the
+ * wasm-bindgen glue it names, and compiles the .wasm while the window gets ready.
  * @param {URL} manifestUrl Address of wordcraft.json.
- * @returns {Promise<void>} Settles when WordCraft's init returned.
+ * @returns {Promise<{ glue: { default(options: object): Promise<unknown> }, module: WebAssembly.Module }>}
  */
-export async function loadWordCraft(manifestUrl) {
+export async function prepareWordCraft(manifestUrl) {
     const response = await fetch(manifestUrl);
     if (!response.ok) {
         throw new Error(`${manifestUrl.pathname}: HTTP ${response.status}`);
     }
 
     const build = await response.json();
-    const glue = await import(new URL(build.glue, manifestUrl).href);
-    await glue.default({ module_or_path: new URL(build.wasm, manifestUrl) });
+    const wasmUrl = new URL(build.wasm, manifestUrl);
+    const [glue, module] = await Promise.all([
+        import(new URL(build.glue, manifestUrl).href),
+        compileWasm(wasmUrl),
+    ]);
+    return { glue, module };
+}
+
+// compileStreaming needs application/wasm; a server that sends another type gets the slower path.
+async function compileWasm(url) {
+    const response = await fetch(url);
+    if (!response.ok) {
+        throw new Error(`${url.pathname}: HTTP ${response.status}`);
+    }
+
+    if (response.headers.get("Content-Type")?.startsWith("application/wasm")) {
+        return WebAssembly.compileStreaming(response);
+    }
+
+    return WebAssembly.compile(await response.arrayBuffer());
+}
+
+/**
+ * Starts WordCraft from what prepareWordCraft gave. WordCraft finds the canvas itself (id
+ * wordcraft_canvas, data-host="page").
+ * @param {Promise<{ glue: { default(options: object): Promise<unknown> }, module: WebAssembly.Module }>} prepared
+ * @returns {Promise<void>} Settles when WordCraft's init returned.
+ */
+export async function runWordCraft(prepared) {
+    const { glue, module } = await prepared;
+    await glue.default({ module_or_path: module });
 }
 
 /**
@@ -82,16 +125,22 @@ export async function loadWordCraft(manifestUrl) {
  * @param {object} options
  * @param {EventTarget} options.page The page's window: receives `init`, and clicks.
  * @param {EventTarget} options.canvas WordCraft's canvas, where its events arrive.
- * @param {() => Promise<void>} options.start Starts WordCraft (loadWordCraft in the browser).
+ * @param {(init: object) => Promise<void>} options.start Starts WordCraft once `init` arrived (runWordCraft in the browser).
  * @param {string} options.origin The only origin `init` is accepted from (this page's own).
  * @param {object|null} [options.parent] The window allowed to send `init` (the page's parent).
  * @param {() => object | undefined} [options.api] Gives WordCraft's page API (`window.wordcraft`).
+ * @param {(send: Function) => { answer(message: object): boolean }} [options.filePicker] Intercepts
+ *        WordCraft's file picker (interceptFilePicker in the browser; none in the tests of the port).
  * @returns {{ stopped: Promise<void> }} `stopped` settles when the start attempt ended.
  */
-export function startProxy({ page, canvas, start, origin, parent = null, api = () => undefined }) {
+export function startProxy({ page, canvas, start, origin, parent = null, api = () => undefined, filePicker = null }) {
     let port = null;
     let settled = false;
     const outbox = [];
+    let resolveInit;
+    const initReceived = new Promise((resolve) => {
+        resolveInit = resolve;
+    });
 
     const send = (message, transfer = []) => {
         if (port) {
@@ -128,8 +177,12 @@ export function startProxy({ page, canvas, start, origin, parent = null, api = (
             }));
         } else if (message?.type === MessageTypes.command) {
             runCommand(api(), message).then((result) => send(result));
+        } else if (message?.type === MessageTypes.picked) {
+            picker?.answer(message);
         }
     };
+
+    const picker = filePicker?.(send) ?? null;
 
     // The first message from the window, with the port. Any other sender, or a second `init`, is
     // ignored: the port is this window's alone.
@@ -149,6 +202,19 @@ export function startProxy({ page, canvas, start, origin, parent = null, api = (
 
         port = received;
         port.onmessage = onPortMessage;
+        const init = event.data;
+        if (Array.isArray(init.reservedKeys) && init.reservedKeys.length > 0) {
+            forwardReservedKeys({ page, chords: init.reservedKeys, send });
+        }
+
+        // Settings first: WordCraft reads its preferences as it starts.
+        if (init.settings !== null && typeof init.settings === "object") {
+            installStorage(page, new MemoryStorage(init.settings, (key, value) => {
+                send({ type: MessageTypes.setting, key, value });
+            }));
+        }
+
+        resolveInit(init);
         for (const [message, transfer] of outbox.splice(0)) {
             port.postMessage(message, transfer);
         }
@@ -157,8 +223,8 @@ export function startProxy({ page, canvas, start, origin, parent = null, api = (
     // A click in WordCraft: the Kazo window comes to the front (capture: WordCraft may stop it).
     page.addEventListener("pointerdown", () => send({ type: MessageTypes.focus }), true);
 
-    const stopped = Promise.resolve()
-        .then(start)
+    const stopped = initReceived
+        .then((init) => start(init))
         .catch((error) => {
             // WordCraft reports its own start errors with wordcraft:failed; this one is ours (the
             // provenance file, the glue or the .wasm could not be loaded).
@@ -171,14 +237,20 @@ export function startProxy({ page, canvas, start, origin, parent = null, api = (
     return { stopped };
 }
 
-// In the iframe page: start at once, so WordCraft downloads while the window gets ready.
+// In the iframe page: WordCraft downloads and compiles at once, while the window gets ready, and
+// starts once the window sent `init`.
 if (typeof document !== "undefined" && document.getElementById("wordcraft_canvas")) {
+    const prepared = prepareWordCraft(new URL(BuildManifestPath, import.meta.url));
+    prepared.catch(() => {
+        // Reported by runWordCraft, which awaits the same promise once `init` arrived.
+    });
     startProxy({
         page: window,
         canvas: document.getElementById("wordcraft_canvas"),
-        start: () => loadWordCraft(new URL(BuildManifestPath, import.meta.url)),
+        start: () => runWordCraft(prepared),
         origin: window.location.origin,
         parent: window.parent,
         api: () => window.wordcraft,
+        filePicker: (send) => interceptFilePicker({ page: window, send }),
     });
 }

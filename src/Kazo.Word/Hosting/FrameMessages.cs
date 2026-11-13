@@ -15,4 +15,16 @@ public static class FrameMessages
 
     /// <summary>The shown document has changes, or not; the value is <c>true</c> or <c>false</c> (used from work item 2).</summary>
     public const string Dirty = "dirty";
+
+    /// <summary>A reserved chord meant for the window was typed in WordCraft; the value is the key's JSON.</summary>
+    public const string Key = "key";
+
+    /// <summary>WordCraft opened its file picker; the value is <c>{ id, accept, multiple }</c>.</summary>
+    public const string Pick = "pick";
+
+    /// <summary>WordCraft wrote a setting; the value is <c>{ key, value }</c> (value null: removed).</summary>
+    public const string Setting = "setting";
+
+    /// <summary>The OS theme's color scheme changed; the value is <c>light</c> or <c>dark</c>.</summary>
+    public const string Scheme = "scheme";
 }

@@ -35,10 +35,20 @@ public sealed class ManifestTests
     }
 
     [Fact]
-    public void Work_item_1_asks_for_no_capability_and_opens_no_file_type()
+    public void The_proxy_asks_for_the_open_dialog_the_files_it_reads_its_settings_folder_and_new_windows()
     {
-        Assert.Empty(_app.Capabilities);
-        Assert.Empty(_app.FileHandlers);
+        // Work item 3: the OS open dialog replaces WordCraft's picker, picked pictures and fonts are
+        // read, ~/.config/ca.kazo.word holds WordCraft's settings, Ctrl+N launches another window.
+        Assert.Subset(
+            _app.Capabilities.ToHashSet(StringComparer.Ordinal),
+            new HashSet<string>(StringComparer.Ordinal)
+            {
+                AppCapabilities.DialogFileOpen,
+                AppCapabilities.FileSystemUserHomeRead,
+                AppCapabilities.FileSystemPrivateRead,
+                AppCapabilities.FileSystemPrivateWrite,
+                AppCapabilities.AppsLaunch,
+            });
     }
 
     [Fact]

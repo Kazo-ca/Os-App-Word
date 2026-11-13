@@ -42,6 +42,7 @@ public sealed partial class WordWindow : IAsyncDisposable
     {
         CancelTimeout();
         await StopFrameAsync();
+        await FlushSettingsAsync();
     }
 
     /// <inheritdoc />
@@ -68,6 +69,7 @@ public sealed partial class WordWindow : IAsyncDisposable
         WordFrame frame = new(JavaScript);
         frame.Ready += OnReadyAsync;
         frame.Failed += OnFailedAsync;
+        ConnectProxy(frame, connect: true);
         _frame = frame;
         ArmTimeout(_startup.Attempt);
 
@@ -75,7 +77,9 @@ public sealed partial class WordWindow : IAsyncDisposable
             Author: AppContext.UserDisplayName,
             Language: AppContext.Culture.TwoLetterISOLanguageName,
             WebGl: LaunchArguments.Contains(WebGlArgument, StringComparer.Ordinal),
-            Title: L["EditorLabel"]);
+            Title: L["EditorLabel"],
+            ReservedKeys: ReservedKeys.All,
+            Settings: await LoadSettingsAsync());
         try
         {
             await frame.StartAsync(_frameHost, options, AppContext.CancellationToken);
@@ -95,6 +99,7 @@ public sealed partial class WordWindow : IAsyncDisposable
 
         _frame.Ready -= OnReadyAsync;
         _frame.Failed -= OnFailedAsync;
+        ConnectProxy(_frame, connect: false);
         await _frame.DisposeAsync();
         _frame = null;
     }
@@ -117,9 +122,13 @@ public sealed partial class WordWindow : IAsyncDisposable
 
         CancelTimeout();
         await InvokeAsync(StateHasChanged);
-        if (IsWindowActive && _frame is not null)
+        if (_frame is { } frame)
         {
-            await _frame.FocusAsync();
+            await ApplyThemeAndLanguageAsync(frame);
+            if (IsWindowActive)
+            {
+                await frame.FocusAsync();
+            }
         }
     }
 

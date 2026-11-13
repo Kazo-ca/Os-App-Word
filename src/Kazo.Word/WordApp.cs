@@ -53,8 +53,19 @@ public sealed class WordApp : AppDefinition
     public override bool SingleInstancePerUser => false;
 
     /// <inheritdoc />
-    /// <remarks>Work item 1 reads and writes no file: WordCraft runs alone in its iframe.</remarks>
-    public override IReadOnlyList<string> Capabilities => [];
+    /// <remarks>
+    /// Work item 3: the OS open dialog replaces WordCraft's file picker and the chosen files are read
+    /// (pictures, fonts, recipients); WordCraft's settings live in <c>~/.config/ca.kazo.word/</c>; a
+    /// document picked in WordCraft, and Ctrl+N, open another Kazo Word window.
+    /// </remarks>
+    public override IReadOnlyList<string> Capabilities =>
+    [
+        AppCapabilities.DialogFileOpen,
+        AppCapabilities.FileSystemUserHomeRead,
+        AppCapabilities.FileSystemPrivateRead,
+        AppCapabilities.FileSystemPrivateWrite,
+        AppCapabilities.AppsLaunch,
+    ];
 
     /// <inheritdoc />
     public override IReadOnlyList<string> Icons => ["icons/app.svg"];

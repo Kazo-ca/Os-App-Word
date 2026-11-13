@@ -16,6 +16,9 @@ qui est livré, les tests et le critère de fin. Chaque fil de chantier part de 
 | 11 | En amont, on se joint aux issues existantes ; une issue neuve seulement pour ce qui manque. Claude prépare les textes, Benoit les publie. | Benoit, 2026-11-13 |
 | 12 | Le correcteur orthographique en anglais seulement est accepté pour la v1, noté comme limite connue. | Benoit, 2026-11-13 |
 | 13 | Le build compilé de WordCraft vit dans ce dépôt, sous `wwwroot/wordcraft/` (section 3). | Benoit, 2026-11-13 |
+| 14 | Kazo OS garde un ordre stable des fenêtres dans la page ; une fenêtre qui passe devant ne recharge plus son iframe (correction dans `Kazo-ca/Os`). | Benoit, 2026-11-13 |
+| 15 | Le `.wasm` réel fait 61 Mo : la décision 13 reste. | Benoit, 2026-11-13 |
+| 16 | Pas de menu Kazo pour la v1 : l'onglet Fichier de WordCraft suffit (le SDK ne donne pas encore de menu de fenêtre). | Benoit, 2026-11-13 |
 
 ## 2. Les trois parties
 
@@ -80,10 +83,17 @@ src/Kazo.Word/                      l'app (assembly Kazo.Word)
   Documents/SaveDecision.cs         réécrire, demander un chemin, copie exportée
   Documents/DocumentFormats.cs      extensions, types, filtres des dialogues
   Opening/OpenRequest.cs            fichier demandé au lancement ou par intention
-  Pickers/PickPurpose.cs            document, image, polices, destinataires (d'après accept)
+  WordWindow.Proxy.cs               sélecteur, touches réservées, réglages, thème et langue
+  Hosting/ReservedKeys.cs           raccourcis de l'OS et Ctrl+N relayés par le proxy
+  Hosting/WordCraftLanguage.cs      langue de WordCraft d'après la culture Kazo
+  Pickers/PickRequest.cs            document, image, polices, destinataires (d'après accept)
+  Settings/WebStorageFile.cs        ~/.config/ca.kazo.word/web-storage.json
   Strings.cs, Resources/*.resx      textes fr et en, localization/fr.json
   wwwroot/host/index.html           page de l'iframe : canvas data-host="page", chargement
   wwwroot/host/word-proxy.js        le proxy
+  wwwroot/host/file-picker.js       attrape le champ de fichier de rfd
+  wwwroot/host/reserved-keys.js     relaie les raccourcis réservés
+  wwwroot/host/settings-store.js    localStorage en mémoire renvoyé à la fenêtre
   wwwroot/host/word-proxy.css
   wwwroot/js/word-host.js           côté OS : iframe et MessagePort
   wwwroot/wordcraft/                build de WordCraft, non modifié à la main
@@ -111,7 +121,7 @@ Messages sur le `MessagePort`, tous de la forme `{ type, id?, ... }`. Les octets
 
 | Message | Sens | Contenu | Rôle |
 | --- | --- | --- | --- |
-| `init` | fenêtre → proxy | `author`, `theme`, `language`, `reservedKeys` | Premier message, avec le port. |
+| `init` | fenêtre → proxy | `author`, `language`, `reservedKeys`, `settings` | Premier message, avec le port. WordCraft ne démarre qu'après. |
 | `ready` | proxy → fenêtre | `appVersion` | WordCraft écoute. |
 | `failed` | proxy → fenêtre | `error` | WordCraft n'a pas démarré (pas de WebGPU ni de WebGL2, wasm introuvable). |
 | `open` | fenêtre → proxy | `name`, `bytes` | Ouvre un document. |
@@ -119,9 +129,10 @@ Messages sur le `MessagePort`, tous de la forme `{ type, id?, ... }`. Les octets
 | `dirty` | proxy → fenêtre | `dirty` | Le document affiché a des modifications. |
 | `pick` | proxy → fenêtre | `id`, `accept`, `multiple` | WordCraft ouvre le sélecteur de fichiers. |
 | `picked` | fenêtre → proxy | `id`, `files` ou `cancelled` | Réponse au sélecteur. |
-| `command` | fenêtre → proxy | `id`, `method`, `params` | Appelle `window.wordcraft.request`. |
+| `command` | fenêtre → proxy | `id`, `method`, `params`, `timeoutMs` | Appelle `window.wordcraft.request` (10 s par défaut). Le thème et la langue passent par là (`ui.theme`, `ui.language`). |
 | `result` | proxy → fenêtre | `id`, `ok`, `value` ou `error` | Réponse à `command`. |
-| `key` | proxy → fenêtre | touche et modificateurs | Un raccourci de l'OS tapé dans l'iframe. |
+| `key` | proxy → fenêtre | `phase`, `target`, touche et modificateurs | Un raccourci réservé tapé dans l'iframe : `os` est rejoué sur l'élément iframe pour l'OS, `app` est traité par la fenêtre (`Ctrl+N`). |
+| `setting` | proxy → fenêtre | `key`, `value` | WordCraft a écrit dans son `localStorage` ; la fenêtre l'écrit dans `~/.config/ca.kazo.word/web-storage.json`. |
 | `focus` | proxy → fenêtre | rien | Un clic dans l'iframe : la fenêtre Kazo passe devant. |
 
 Le proxy traduit `open`, `save`, `dirty`, `ready`, `failed` de et vers les événements
@@ -256,6 +267,34 @@ Un essai qui doit prouver que WordCraft démarre dans une fenêtre Kazo.
 - **Terminé quand** : aucun dialogue du navigateur ne s'ouvre depuis Kazo Word, et les
   raccourcis de l'OS marchent quand le curseur est dans le document.
 
+**Résultat (2026-11-13).**
+
+- Sélecteur : `host/file-picker.js` attrape le champ de fichier de rfd (clic, ou carte `#rfd-overlay`
+  sans activation) et envoie `pick`. L'usage se déduit des extensions acceptées (document,
+  image, polices, destinataires). La fenêtre montre le dialogue de l'OS, lit les fichiers et
+  répond `picked`. Un document s'ouvre dans une nouvelle fenêtre Kazo Word et WordCraft entend
+  « annulé ». L'annulation passe par un `change` sans fichier : l'événement `cancel` fait
+  paniquer WordCraft 0.18.1.
+- Raccourcis : `host/reserved-keys.js` garde les raccourcis par défaut de l'OS (le fichier de
+  raccourcis de l'utilisateur n'est pas lisible par une app) et `Ctrl+N`. `Alt+F4` n'est lié
+  par l'OS qu'en plein écran (verrou du clavier) ; hors plein écran, c'est `Alt+Q`.
+- Thème et langue : la fenêtre envoie `ui.theme` à chaque changement de thème de l'OS et
+  choisit la langue de WordCraft la plus proche de la culture Kazo (`WordCraftLanguage`).
+- Essai des réglages : **il tient**. `localStorage` est remplacé dans l'iframe par une copie
+  en mémoire chargée depuis `~/.config/ca.kazo.word/web-storage.json`, écrite 500 ms après la
+  dernière écriture. Avec deux fenêtres, la dernière écriture gagne. Les polices ajoutées
+  (IndexedDB) restent partagées par l'origine.
+- Menu de fenêtre : abandonné (décision 16).
+- Les messages du proxy arrivent hors du contexte d'exécution Kazo : chaque gestionnaire qui
+  touche au SDK fait `KazoExecutionContext.Enter`.
+- Limites notées : l'impression passe par le dialogue d'impression du navigateur (exception
+  acceptée) ; « Polices du système » demande la permission du navigateur pour les polices
+  locales ; le copier-coller marche avec le presse-papiers du système, mais un essai a collé
+  en double le texte copié plus tôt (à revoir) ; le relais du focus devient inutile quand
+  Kazo OS amène la fenêtre devant au clic dans son iframe (à revoir à la montée du sous-module).
+- Tests : 31 tests du proxy (`npm test`), 68 tests xUnit, 6 parcours Playwright
+  (`tests/e2e/proxy.e2e.mjs`), qui échouent si le sélecteur du navigateur s'ouvre.
+
 ### Chantier 4 : build depuis les sources (`word/4-build-from-source`)
 
 - Sous-module `external/wordcraft` (fork). Le Store ne le récupère pas et n'en a pas besoin.
@@ -312,4 +351,5 @@ Chaque proposition acceptée retire un contournement du proxy.
 | Mémoire : chaque fenêtre charge son propre WordCraft | Mesuré au chantier 1 : environ 130 Mo pour la première fenêtre, 25 Mo par fenêtre de plus, sans document. À refaire avec de gros documents au chantier 2. |
 | Une fenêtre qui passe devant recharge son iframe (Kazo OS déplace son élément dans la page) | Décision 14 : Kazo OS garde un ordre stable des fenêtres dans la page, l'empilement restant en `z-index` (fil à part de `Kazo-ca/Os`). Le test « le document survit quand sa fenêtre passe devant » arrive avec la montée du sous-module vers cette version. |
 | Le `.wasm` fait 61 Mo, pas 13 Mo | Décision 15 : la décision 13 reste. |
+| Réglages de WordCraft partagés par tous les utilisateurs Kazo (même origine) | Essai du chantier 3 tenu : réglages dans `~/.config/ca.kazo.word/`. Restent partagées les polices ajoutées (IndexedDB). |
 | GPU absent | Écran d'erreur clair (`failed`). |
