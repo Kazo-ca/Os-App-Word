@@ -187,6 +187,7 @@ Aucun chantier ne commence sans le feu vert de Benoit.
 
 | Quoi | Qui | État |
 | --- | --- | --- |
+| Ordre stable des fenêtres dans la page (décision 14) | Fil Kazo OS demandé au coordinateur le 2026-11-13 | À faire. Avant de fermer le chantier 1 (test du document qui survit) et avant le chantier 5. |
 | Correction du service worker de Kazo OS (décision 10) | Fil « Servir la page iframe des apps installées » | PR [Os#451](https://github.com/Kazo-ca/Os/pull/451) (ADR 0243) prête le 2026-11-13, à fusionner. Rien à changer côté app. Ne bloque que le chantier 5. |
 | Forks `Kazo-ca/wordcraft`, `Kazo-ca/craft-libs`, `Kazo-ca/gridcraft` (décision 9) | Benoit, par le coordinateur | Avant le chantier 4. |
 
@@ -224,7 +225,7 @@ Un essai qui doit prouver que WordCraft démarre dans une fenêtre Kazo.
   que sans Kazo Word). Le module compilé est partagé ; un gros document coûtera plus.
 - **Trouvé** : Kazo OS range les fenêtres dans la page selon leur ordre d'empilement. Quand une
   fenêtre passe devant, son élément est déplacé, et un iframe déplacé se recharge : WordCraft
-  repart de zéro et le document est perdu (question 14, section 9). `word-host.js` reconnecte
+  repart de zéro et le document est perdu (décision 14, section 9). `word-host.js` reconnecte
   la page rechargée, mais le document est perdu.
 - OS publié : à essayer une fois Os#451 publiée (décision 10).
 
@@ -309,6 +310,6 @@ Chaque proposition acceptée retire un contournement du proxy.
 | WordCraft change vite (une version par semaine) | Version épinglée ; les tests du proxy et les parcours Playwright disent ce qu'une montée de version casse. |
 | Le Store analyse le JavaScript de l'app (CodeQL) | Le `.js` généré de WordCraft sera analysé : à vérifier au chantier 5, avant le tag. |
 | Mémoire : chaque fenêtre charge son propre WordCraft | Mesuré au chantier 1 : environ 130 Mo pour la première fenêtre, 25 Mo par fenêtre de plus, sans document. À refaire avec de gros documents au chantier 2. |
-| Une fenêtre qui passe devant recharge son iframe (Kazo OS déplace son élément dans la page) | Question 14 posée à Benoit le 2026-11-13 ; recommandation : Kazo OS garde un ordre stable des fenêtres dans la page, l'empilement restant en `z-index`. |
-| Le `.wasm` fait 61 Mo, pas 13 Mo | Question 15 posée à Benoit le 2026-11-13 ; recommandation : garder la décision 13. |
+| Une fenêtre qui passe devant recharge son iframe (Kazo OS déplace son élément dans la page) | Décision 14 : Kazo OS garde un ordre stable des fenêtres dans la page, l'empilement restant en `z-index` (fil à part de `Kazo-ca/Os`). Le test « le document survit quand sa fenêtre passe devant » arrive avec la montée du sous-module vers cette version. |
+| Le `.wasm` fait 61 Mo, pas 13 Mo | Décision 15 : la décision 13 reste. |
 | GPU absent | Écran d'erreur clair (`failed`). |

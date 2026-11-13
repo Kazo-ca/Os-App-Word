@@ -184,6 +184,7 @@ work item starts without Benoit's go.
 
 | What | Who | State |
 | --- | --- | --- |
+| Stable order of the windows in the page (decision 14) | Kazo OS thread asked of the coordinator on 2026-11-13 | To do. Before closing work item 1 (test of the document that survives) and before work item 5. |
 | Fix of the Kazo OS service worker (decision 10) | Thread "Servir la page iframe des apps installées" | PR [Os#451](https://github.com/Kazo-ca/Os/pull/451) (ADR 0243) ready on 2026-11-13, to merge. Nothing to change on the app side. Only blocks work item 5. |
 | Forks `Kazo-ca/wordcraft`, `Kazo-ca/craft-libs`, `Kazo-ca/gridcraft` (decision 9) | Benoit, through the coordinator | Before work item 4. |
 
@@ -221,7 +222,7 @@ A trial that must prove WordCraft starts in a Kazo window.
   The compiled module is shared; a large document will cost more.
 - **Found**: Kazo OS orders the windows in the page by their stacking order. When a window comes
   to the front its element is moved, and a moved iframe reloads: WordCraft starts again and the
-  document is lost (question 14, section 9). `word-host.js` reconnects the reloaded page, but
+  document is lost (decision 14, section 9). `word-host.js` reconnects the reloaded page, but
   the document is gone.
 - Published OS: to try once Os#451 is released (decision 10).
 
@@ -304,6 +305,6 @@ Each accepted proposal removes a workaround from the proxy.
 | WordCraft changes fast (one version a week) | Pinned version; the proxy tests and the Playwright journeys say what a version upgrade breaks. |
 | The Store analyses the app's JavaScript (CodeQL) | WordCraft's generated `.js` will be analysed: to check in work item 5, before the tag. |
 | Memory: each window loads its own WordCraft | Measured in work item 1: about 130 MB for the first window, 25 MB per extra window, without a document. To measure again with large documents in work item 2. |
-| A window coming to the front reloads its iframe (Kazo OS moves its element in the page) | Question 14 asked to Benoit on 2026-11-13; recommendation: Kazo OS keeps a stable order of the windows in the page, stacking staying in `z-index`. |
-| The `.wasm` is 61 MB, not 13 MB | Question 15 asked to Benoit on 2026-11-13; recommendation: keep decision 13. |
+| A window coming to the front reloads its iframe (Kazo OS moves its element in the page) | Decision 14: Kazo OS keeps a stable order of the windows in the page, stacking staying in `z-index` (separate thread of `Kazo-ca/Os`). The test "the document survives when its window comes to the front" comes with the submodule upgrade to that version. |
+| The `.wasm` is 61 MB, not 13 MB | Decision 15: decision 13 stays. |
 | No GPU | Clear error screen (`failed`). |
