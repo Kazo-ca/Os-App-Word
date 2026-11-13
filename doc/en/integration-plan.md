@@ -237,6 +237,39 @@ A trial that must prove WordCraft starts in a Kazo window.
 - **Done when**: no case loses changes unless the user chose it, including when the write
   fails.
 
+**Result (2026-11-13).**
+
+- What WordCraft 0.18.1 sends, checked in its page: a new document is named after its first
+  words ("Hello.docx") and its first save arrives with `saveAs` true, the next ones with the same
+  name and `saveAs` false; Save As to `.odt` arrives with `saveAs` true; a PDF, PNG, HTML,
+  Markdown or text file arrives with `saveAs` false (copies). WordCraft clears its "modified"
+  state as soon as it has sent the save.
+- `DocumentSession` binds each WordCraft document name to a path. A copy never changes the
+  binding. A save that does not complete (dialog cancelled, write refused, any other error)
+  leaves the window "modified", and the next save of that document asks for a path again. When
+  the user picks another file name, the window renames the document in WordCraft
+  (`file.rename`) so its title and later saves carry the file's name.
+- Start: a requested file (launch argument) is read with `KazoFile` and sent with `open`;
+  otherwise a blank document (`file.new`). Either way WordCraft's start screen is closed
+  (`ui.backstage {"value": false}`).
+- Title: `*name — Kazo Word`, "Untitled" before the first save.
+- Close: `ui.inspect` lists the documents; "Yes" saves each one (`engine.execute` `file.save`
+  with `doc`) and closes only once all are written; "No" closes; "Cancel" keeps the window. If
+  WordCraft does not answer, the window only asks whether to close without saving.
+- Associations: the ten word-processing formats with `open` and `edit`; `.md`, `.txt`, `.html`,
+  `.htm`, `.tex` with `open` only. Capabilities: Open and Save dialogs, home folder read and
+  write, `apps.launch` (open a file in another Kazo Word window). `.tex` has no other app in
+  Kazo OS: Kazo Word becomes its default app in practice.
+- For work item 3: `WordWindow.OpenInNewWindowAsync(path)` (in place when the window holds only
+  an untouched blank document, otherwise a new window), `ShowOpenDialogAsync()` and
+  `IsUntouchedBlank`.
+- Found: a `[JSInvokable]` callback does not run in the app's context; without
+  `KazoExecutionContext.Enter(AppContext)`, `KazoFile` refuses. The Playwright run showed it.
+- Tests: 57 more xUnit cases (`DocumentSessionTests`, `DocumentFormatsTests`); three Playwright
+  runs (`tests/e2e/open-save.e2e.mjs`): save a new document, save it again without a dialog,
+  reopen it with `xdg-open` in a second window; Save As to `.odt` then a PDF copy; close with
+  changes (Cancel, cancelled dialog, then Yes). The write failure is covered in xUnit.
+
 ### Work item 3: full proxy (`word/3-proxy`)
 
 - File picker (the four uses), `Ctrl+N` and File › Open in a new window.

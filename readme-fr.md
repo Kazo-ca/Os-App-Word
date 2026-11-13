@@ -38,7 +38,7 @@ dotnet build Kazo.Word.slnx -c Release
 dotnet test Kazo.Word.slnx -c Release --no-build
 npm ci
 npm test               # le proxy et le module côté OS
-npm run test:e2e       # Playwright, dans l'hôte Release (Chromium)
+npm run test:e2e       # Playwright, dans l'hôte Release (Chromium) : démarrage, ouvrir et enregistrer
 ```
 
 Lancez `launch ca.kazo.word --webgl` dans le terminal de Kazo OS pour forcer le rendu WebGL 2

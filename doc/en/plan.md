@@ -193,7 +193,7 @@ save it, reopen it; Save As; two windows at once.
 | Detailed integration plan | `docs/word-plan-verification` | check | Merged (PR [#2](https://github.com/Kazo-ca/Os-App-Word/pull/2)) |
 | Kazo OS: iframe page of an installed app | `fix/installed-app-iframe-page` in `Kazo-ca/Os` | decision 10 | PR [Os#451](https://github.com/Kazo-ca/Os/pull/451) (ADR 0243), to merge. Kazo Word will require the first OS version published after 3.3.0. |
 | 1. Solution and iframe | `word/1-solution` | plan | In progress (Benoit's go on 2026-11-13). WordCraft runs in a Kazo window; decisions 14 (window order, Kazo OS fix) and 15 (size) taken; left: the test of the document that survives and the trial in a published OS. |
-| 2. Open and save | `word/2-open-save` | 1 | To do |
+| 2. Open and save | `word/2-open-save` | 1 | Done 2026-11-13 (result in the [integration plan](integration-plan.md#work-item-2-open-and-save-word2-open-save)), PR to `word/base`. |
 | 3. Full proxy | `word/3-proxy` | 1 | To do |
 | 4. Build from source | `word/4-build-from-source` | 1, forks created | To do |
 | 5. Store | `word/5-store` | 2, 3, 4 | To do |
