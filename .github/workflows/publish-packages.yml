@@ -24,7 +24,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  APP_DIRECTORY: src/Kazo.Os.App
+  APP_DIRECTORY: src/Kazo.Word
   PACKAGES_BRANCH: kazoos-packages
 
 jobs:

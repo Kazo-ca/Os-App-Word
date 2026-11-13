@@ -1,32 +1,63 @@
-# Builds and tests the Release profile: the Kazo OS packages from nuget.org, at the version of the
-# submodule (ADR 0176 §4, §6). This is what the Kazo OS Store compiles.
 name: CI
 
+# Builds the Release profile (Kazo OS packages from nuget.org, at the version of the
+# external/KazoOs submodule) and runs every test suite: C# unit tests, the iframe proxy and the OS-side module under
+# node, and the end-to-end runs of the app inside the Kazo OS host (Playwright, Chromium).
+# Pushes to the integration branches, and every PR (work items are pushed and tested through
+# their PR, so a work-item push does not run twice).
 on:
   push:
-    branches: [main]
+    branches: [main, "word/base"]
   pull_request:
 
 permissions:
   contents: read
 
+concurrency:
+  group: "ci-${{ github.ref }}"
+  cancel-in-progress: true
+
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 40
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout (with the Kazo OS submodule)
+        uses: actions/checkout@v6
         with:
           submodules: true
 
-      - uses: actions/setup-dotnet@v4
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v5
         with:
           global-json-file: global.json
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: npm
+
+      # ADR 0176 §6 of Kazo OS: never a modified submodule, always exactly on its release tag.
       - name: Check the Kazo OS submodule
         run: bash .github/scripts/check-kazoos-submodule.sh
 
+      # The Release profile: Kazo OS packages from nuget.org, at the submodule's version. This is
+      # what the Kazo OS Store compiles.
       - name: Build (Release, packages)
-        run: dotnet build -c Release
+        run: dotnet build Kazo.Word.slnx -c Release
 
-      - name: Test
-        run: dotnet test -c Release --no-build
+      - name: C# unit tests
+        run: dotnet test Kazo.Word.slnx -c Release --no-build
+
+      - name: Install JavaScript test tools
+        run: npm ci
+
+      - name: Proxy and host module tests
+        run: npm test
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: End-to-end tests
+        run: npm run test:e2e

@@ -1,7 +1,13 @@
 {
-  "repository": "https://github.com/example/Os-App-MyApp",
-  "project": "src/Kazo.Os.App/Kazo.Os.App.csproj",
+  "repository": "https://github.com/Kazo-ca/Os-App-Word",
+  "project": "src/Kazo.Word/Kazo.Word.csproj",
   "category": "productivity",
-  "tags": ["sample"],
+  "tags": [
+    "word processor",
+    "documents",
+    "docx",
+    "odt",
+    "wordcraft"
+  ],
   "license": "MIT"
 }

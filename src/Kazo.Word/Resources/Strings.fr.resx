@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="EditorLabel" xml:space="preserve">
+    <value>Traitement de texte</value>
+  </data>
+  <data name="FailedTitle" xml:space="preserve">
+    <value>WordCraft n'a pas pu démarrer</value>
+  </data>
+  <data name="FailedHint" xml:space="preserve">
+    <value>WordCraft a besoin de WebGPU ou de WebGL 2 dans ce navigateur.</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Démarrage de WordCraft…</value>
+  </data>
+  <data name="LoadingHint" xml:space="preserve">
+    <value>Le premier démarrage télécharge environ 23 Mo.</value>
+  </data>
+  <data name="Retry" xml:space="preserve">
+    <value>Réessayer</value>
+  </data>
+  <data name="TimedOut" xml:space="preserve">
+    <value>WordCraft n'a pas répondu en {0} secondes.</value>
+  </data>
+</root>

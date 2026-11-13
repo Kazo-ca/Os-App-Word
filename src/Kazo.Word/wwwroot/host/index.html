@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<!--
+  The page of the Kazo Word iframe (section 2 of doc/en/integration-plan.md). WordCraft runs here,
+  in page host mode (data-host="page"): word-proxy.js loads it and relays its canvas events to the
+  Kazo Word window through the MessagePort the window hands over. No inline script or style.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>Kazo Word</title>
+  <link rel="stylesheet" href="word-proxy.css">
+  <script type="module" src="word-proxy.js"></script>
+</head>
+<body>
+  <canvas id="wordcraft_canvas" data-host="page"></canvas>
+  <div id="wordcraft_loading" aria-hidden="true"></div>
+</body>
+</html>

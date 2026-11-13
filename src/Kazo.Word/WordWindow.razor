@@ -1,0 +1,24 @@
+@inherits WindowAppBase
+
+<div class="word-window" role="application" aria-label="@L["EditorLabel"]">
+    @* word-host.js puts WordCraft's iframe in this element; it stays hidden until WordCraft is ready. *@
+    <div class="word-frame @(_startup.State == FrameState.Running ? "running" : string.Empty)" @ref="_frameHost"></div>
+
+    @if (_startup.State == FrameState.Loading)
+    {
+        <div class="word-screen" role="status">
+            <div class="word-spinner" aria-hidden="true"></div>
+            <p class="word-screen-title">@L["Loading"]</p>
+            <p class="word-screen-hint">@L["LoadingHint"]</p>
+        </div>
+    }
+    else if (_startup.State == FrameState.Failed)
+    {
+        <div class="word-screen failed" role="alert">
+            <p class="word-screen-title">@L["FailedTitle"]</p>
+            <p class="word-screen-detail">@FailureText</p>
+            <p class="word-screen-hint">@L["FailedHint"]</p>
+            <button type="button" class="word-retry" @onclick="RetryAsync">@L["Retry"]</button>
+        </div>
+    }
+</div>

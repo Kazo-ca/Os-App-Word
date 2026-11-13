@@ -50,11 +50,12 @@ avec `dotnet build -t:KazoOsPack` seulement, et ne récupère que le sous-module
 fork de WordCraft. Le Store ne peut donc pas compiler WordCraft : il lui faut un build
 déjà fait.
 
-- **A. Dans ce dépôt ✨** : `wwwroot/wordcraft/` contient le `.js`, le `.wasm` (environ
-  13 Mo) et les licences, avec un fichier de provenance (version, commit, SHA-256). Un script
+- **A. Dans ce dépôt ✨** : `wwwroot/wordcraft/` contient le `.js`, le `.wasm` (61 Mo,
+  mesuré au chantier 1 ; le plan disait environ 13 Mo) et les licences, avec un fichier de provenance (version, commit, SHA-256). Un script
   les met à jour : depuis le zip officiel (chantier 1), puis depuis notre compilation
-  (chantier 4), par une PR. C'est ce que fait Webamp. Le dépôt grossit d'environ 5 Mo à chaque
-  montée de version de WordCraft.
+  (chantier 4), par une PR. C'est ce que fait Webamp. Le dépôt grossit d'environ 22 Mo (le `.wasm` compressé)
+  à chaque montée de version de WordCraft, et GitHub avertit au push d'un fichier de plus de
+  50 Mo (il refuse au-delà de 100 Mo).
 - **B. Téléchargé pendant la compilation** : une cible MSBuild télécharge le zip épinglé et
   vérifie son SHA-256. Le dépôt reste léger et le Store n'a rien à changer (son poste de
   compilation a le réseau). Mais le contenu du paquet n'est plus tout entier dans le commit
@@ -68,12 +69,13 @@ déjà fait.
 ## 4. Fichiers
 
 ```
-Kazo.Word.sln
+Kazo.Word.slnx
 src/Kazo.Word/                      l'app (assembly Kazo.Word)
   WordApp.cs                        [AppManifest] : ca.kazo.word, formats, capacités, fenêtre
   WordWindow.razor(.cs)(.css)       la fenêtre : iframe, chargement, erreur, garde de fermeture
   Hosting/WordFrame.cs              enveloppe C# de js/word-host.js (appels et événements)
   Hosting/FrameMessages.cs          les types des messages (section 5)
+  Hosting/FrameStartup.cs           chargement, WordCraft ou erreur, délai de 60 s, « Réessayer »
   Documents/DocumentSession.cs      état d'une fenêtre : documents liés, « modifié », décisions
   Documents/SaveDecision.cs         réécrire, demander un chemin, copie exportée
   Documents/DocumentFormats.cs      extensions, types, filtres des dialogues
@@ -91,7 +93,7 @@ src/Kazo.Word/                      l'app (assembly Kazo.Word)
 src/Kazo.Word.Os/                   hôte de débogage (du modèle)
 tests/Kazo.Word.Tests/              xUnit
 tests/proxy/                        node --test, avec un faux WordCraft
-tests/Kazo.Word.E2E/                Playwright, dans l'hôte de débogage
+tests/e2e/                          Playwright (node --test), dans l'hôte de débogage
 tools/vendor-wordcraft.sh           zip épinglé ou dossier compilé → wwwroot/wordcraft/
 external/KazoOs                     sous-module (du modèle)
 external/wordcraft                  sous-module du fork (chantier 4 seulement)
@@ -205,6 +207,27 @@ Un essai qui doit prouver que WordCraft démarre dans une fenêtre Kazo.
   fait passer la fenêtre devant ; la taille du paquet `.kazoapp` est notée dans le plan ; le
   résultat dans un OS publié est noté (attendu : en échec jusqu'à la décision 10).
 
+**Résultat (2026-11-13).**
+
+- WordCraft s'affiche en 4 secondes environ dans l'hôte de débogage (Release, Kazo OS 3.3.0) et
+  le texte tapé arrive dans le document, avec le rendu WebGPU (`BrowserWebGpu`) et avec le
+  rendu WebGL 2 (argument de lancement `--webgl`, qui ajoute `?webgl` à l'iframe). WordCraft
+  passe de lui-même à WebGL 2 quand le navigateur n'a pas d'adaptateur WebGPU.
+- Deux fenêtres tournent en même temps, chacune avec son document ; un clic dans WordCraft fait
+  passer sa fenêtre devant.
+- En mode hôte, WordCraft s'ouvre sur son écran d'accueil (nouveau document, modèles) : le
+  chantier 2 envoie le fichier demandé ou crée un document vide.
+- Paquet `.kazoapp` : 22,9 Mo, 61,3 Mo décompressé, 31 fichiers (limites : 64 Mio, 128 Mio,
+  2000 fichiers). Le `.wasm` seul fait 61 Mo.
+- Mémoire (Chromium sans écran, rendu logiciel, écran d'accueil) : environ 130 Mo pour la
+  première fenêtre, puis environ 25 Mo par fenêtre de plus (quatre fenêtres : 233 Mo de plus
+  que sans Kazo Word). Le module compilé est partagé ; un gros document coûtera plus.
+- **Trouvé** : Kazo OS range les fenêtres dans la page selon leur ordre d'empilement. Quand une
+  fenêtre passe devant, son élément est déplacé, et un iframe déplacé se recharge : WordCraft
+  repart de zéro et le document est perdu (question 14, section 9). `word-host.js` reconnecte
+  la page rechargée, mais le document est perdu.
+- OS publié : à essayer une fois Os#451 publiée (décision 10).
+
 ### Chantier 2 : ouvrir et enregistrer (`word/2-open-save`)
 
 - Associations de fichiers et « Ouvrir avec » (formats du plan), `OpenRequest`, intentions.
@@ -285,5 +308,7 @@ Chaque proposition acceptée retire un contournement du proxy.
 | --- | --- |
 | WordCraft change vite (une version par semaine) | Version épinglée ; les tests du proxy et les parcours Playwright disent ce qu'une montée de version casse. |
 | Le Store analyse le JavaScript de l'app (CodeQL) | Le `.js` généré de WordCraft sera analysé : à vérifier au chantier 5, avant le tag. |
-| Mémoire : chaque fenêtre charge son propre WordCraft | Mesurer au chantier 1 avec deux et quatre fenêtres. |
+| Mémoire : chaque fenêtre charge son propre WordCraft | Mesuré au chantier 1 : environ 130 Mo pour la première fenêtre, 25 Mo par fenêtre de plus, sans document. À refaire avec de gros documents au chantier 2. |
+| Une fenêtre qui passe devant recharge son iframe (Kazo OS déplace son élément dans la page) | Question 14 posée à Benoit le 2026-11-13 ; recommandation : Kazo OS garde un ordre stable des fenêtres dans la page, l'empilement restant en `z-index`. |
+| Le `.wasm` fait 61 Mo, pas 13 Mo | Question 15 posée à Benoit le 2026-11-13 ; recommandation : garder la décision 13. |
 | GPU absent | Écran d'erreur clair (`failed`). |

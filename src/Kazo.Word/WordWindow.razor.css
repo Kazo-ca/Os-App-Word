@@ -1,0 +1,108 @@
+/*
+ * The Kazo Word window: WordCraft's iframe fills it. While WordCraft starts, or when it failed, a
+ * screen covers the iframe (the iframe must stay in the page to load).
+ */
+.word-window {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 25% 15%, rgba(80, 150, 255, 0.12), transparent 55%),
+        #0d1322;
+    color: #dbe6fb;
+    font-family: system-ui, "Segoe UI", sans-serif;
+}
+
+.word-frame {
+    position: absolute;
+    inset: 0;
+    visibility: hidden;
+}
+
+.word-frame.running {
+    visibility: visible;
+}
+
+.word-frame ::deep .word-frame-iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+.word-screen {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 2rem;
+    text-align: center;
+}
+
+.word-screen p {
+    margin: 0;
+    max-width: 36rem;
+}
+
+.word-screen-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+
+.word-screen-detail {
+    font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+    font-size: 0.8rem;
+    color: #ffb4b4;
+    overflow-wrap: anywhere;
+}
+
+.word-screen-hint {
+    font-size: 0.85rem;
+    color: #8fa3c7;
+}
+
+.word-spinner {
+    width: 2.25rem;
+    height: 2.25rem;
+    margin-bottom: 0.6rem;
+    border: 3px solid rgba(124, 196, 255, 0.2);
+    border-top-color: #7cc4ff;
+    border-radius: 50%;
+    animation: word-spin 0.9s linear infinite;
+}
+
+.word-retry {
+    margin-top: 0.8rem;
+    padding: 0.45rem 1.2rem;
+    border: 1px solid #2f7cf6;
+    border-radius: 6px;
+    background: linear-gradient(180deg, #2f7cf6, #2160c9);
+    color: #fff;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.word-retry:hover,
+.word-retry:focus-visible {
+    background: linear-gradient(180deg, #4a8ff8, #2f7cf6);
+    outline: 2px solid #7cc4ff;
+    outline-offset: 2px;
+}
+
+@keyframes word-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .word-spinner {
+        animation-duration: 3s;
+    }
+}

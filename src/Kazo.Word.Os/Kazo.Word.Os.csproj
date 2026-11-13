@@ -29,7 +29,7 @@
 
   <ItemGroup>
     <!-- The base apps. Add your own apps as ProjectReference or PackageReference items. -->
-    <ProjectReference Include="..\Kazo.Os.App\Kazo.Os.App.csproj" />
+    <ProjectReference Include="..\Kazo.Word\Kazo.Word.csproj" />
     <PackageReference Include="Kazo.Os.Commands" Version="$(KazoOsVersion)" IsSystemApp="true" />
     <PackageReference Include="Kazo.Os.Apps.Terminal" Version="$(KazoOsVersion)" IsSystemApp="true" />
     <PackageReference Include="Kazo.Os.Apps.Settings" Version="$(KazoOsVersion)" IsSystemApp="true" />
