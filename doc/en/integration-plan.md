@@ -21,6 +21,7 @@ tests and the completion criterion. Each work-item thread starts from this page.
 | 16 | No Kazo menu for v1: WordCraft's File tab is enough (the SDK gives no window menu yet). | Benoit, 2026-11-13 |
 | 17 | Kazo OS raises its maximum file size (16 MiB today, ADR 0094) so the 60 MB `.wasm` installs: Kazo OS ADR 0245, 128 MiB per file, released in Kazo OS 3.3.2. | Benoit, 2026-11-13 |
 | 18 | The first Store version stays **0.1.0** (the manifest's version): the number says it is a first trial, WordCraft being in alpha. | Benoit, 2026-11-13 |
+| 19 | The Kazo Word window stays on its screen (`window.canChangeScreen: false`, Kazo OS ADR 0263, issue #19): changing screen reloads the WordCraft iframe. Kazo Word 0.1.1 declares it and needs Kazo OS 3.3.3. | Benoit, 2026-11-13 |
 
 ## 2. The three parts
 
@@ -440,6 +441,18 @@ Result (2026-11-13):
   **Done**: `npm run test:installed -- --store <os>` installs Kazo Word with "Install for me" in
   the Kazo OS Store of the published OS 3.3.2, from the real catalog, and a double-click on a
   `.docx` opens it.
+
+### Version 0.1.1 (`word/10-release-0-1-1`)
+
+- The window stays on its screen (decision 19): `WordApp.Window` sets `CanChangeScreen = false`,
+  so the manifest carries `window.canChangeScreen: false` (Kazo OS ADR 0263, issue #19). On a
+  second screen, the "Other screen" menu explains why instead of moving the window.
+- Submodule `external/KazoOs` on `v3.3.3`: minimum Kazo OS 3.3.3 (an older OS refuses the
+  manifest's new field).
+- Also in this version, from `word/base`: Store tags the catalog accepts (#14), the install
+  journey through the real Store (#16), an unsaved document named "Document1" as in WordCraft
+  (#18), and the README that shows the Store listing (#13).
+- Tag `v0.1.1`, then a catalog PR in Os-AppMarketPlace.
 
 ### Order
 

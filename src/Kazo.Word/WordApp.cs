@@ -44,7 +44,7 @@ public sealed class WordApp : AppDefinition
 
     /// <inheritdoc />
     /// <remarks>The tag that publishes to the Kazo OS Store must be v + this version.</remarks>
-    public override string Version => "0.1.0";
+    public override string Version => "0.1.1";
 
     /// <inheritdoc />
     /// <remarks>
@@ -89,6 +89,9 @@ public sealed class WordApp : AppDefinition
     /// <remarks>
     /// Sizes are the outer size of the OS window (title bar included): 1100 × 760 by default, room
     /// for a page and WordCraft's ribbon; 760 × 480 at least, WordCraft's own minimum plus the frame.
+    /// The window stays on its screen (<see cref="WindowOptions.CanChangeScreen"/> off, Kazo OS
+    /// ADR 0263): changing screen moves the window into another browser document, which reloads
+    /// the WordCraft iframe and loses the open document (issue #19). Needs Kazo OS 3.3.3.
     /// </remarks>
     public override WindowOptions? Window => new()
     {
@@ -96,6 +99,7 @@ public sealed class WordApp : AppDefinition
         DefaultHeight = 760,
         MinWidth = ContentMinWidth + WindowChromeWidth,
         MinHeight = ContentMinHeight + WindowChromeHeight,
+        CanChangeScreen = false,
     };
 
     // Borders and title bar of an OS window (the tallest title bar of the Kazo OS themes, 2.35rem).

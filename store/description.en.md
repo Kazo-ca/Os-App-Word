@@ -38,7 +38,10 @@ processor written in Rust, which runs here in a Kazo OS window.
 - Printing goes through the browser's print dialog.
 - **AutoSave is not available yet**: save with Ctrl+S (Kazo-ca/Os-App-Word#17, waiting for
   WordCraft).
-- Needs Kazo OS 3.3.2 or later.
+- The window stays on its screen: with several screens, Kazo Word does not move to another one
+  (the "Other screen" menu says why), because changing screen would reload WordCraft and lose
+  the document.
+- Needs Kazo OS 3.3.3 or later.
 
 ## License
 
