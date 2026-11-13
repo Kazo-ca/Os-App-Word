@@ -279,7 +279,8 @@ A trial that must prove WordCraft starts in a Kazo window.
 - Start: a requested file (launch argument) is read with `KazoFile` and sent with `open`;
   otherwise a blank document (`file.new`). Either way WordCraft's start screen is closed
   (`ui.backstage {"value": false}`).
-- Title: `*name — Kazo Word`, "Untitled" before the first save.
+- Title: `*name — Kazo Word`. Before the first save, the name WordCraft shows in its own title bar, in its interface language (the Kazo user's): `Document1` in English. The window asks it with `ui.inspect` (`title`) once the language is set, so the two title bars never disagree; "Document1" is the fallback while WordCraft has not answered.
+- AutoSave: greyed out by WordCraft in the browser, even hosted. The upstream fix (`autosave: true` in the `host` message, craft-libs PR #713 and wordcraft PR #6015) is followed by issue #17.
 - Close: `ui.inspect` lists the documents; "Yes" saves each one (`engine.execute` `file.save`
   with `doc`) and closes only once all are written; "No" closes; "Cancel" keeps the window. If
   WordCraft does not answer, the window only asks whether to close without saving.

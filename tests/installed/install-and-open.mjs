@@ -225,7 +225,7 @@ try {
     await openApp(page, 'Kazo Word');
     const first = await waitForNewWindow(page, []);
     const frame = await frameOf(page, first);
-    await expectTitle(page, first, 'Untitled — Kazo Word');
+    await expectTitle(page, first, 'Document1 — Kazo Word');
     await execute(frame, 'text.insert', { text: 'Written in Kazo Word, opened from the File Explorer.' });
     await execute(frame, 'file.save');
     const dialog = page.locator('section.file-dialog', { hasText: 'Save the document' });
