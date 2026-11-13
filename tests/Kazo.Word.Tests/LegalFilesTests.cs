@@ -64,6 +64,18 @@ public sealed class LegalFilesTests
         Assert.Contains(name, File.ReadAllText(Path.Combine(Root, "store", file)), StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void The_store_tags_are_ones_the_catalog_accepts()
+    {
+        // Os-AppMarketPlace refuses any other tag (lower case, digits and '-', 30 characters at most):
+        // v0.1.0 had "word processor" and its catalog folder had to be corrected by hand.
+        using JsonDocument store = JsonDocument.Parse(File.ReadAllText(Path.Combine(Root, "store", "store.json")));
+        foreach (JsonElement tag in store.RootElement.GetProperty("tags").EnumerateArray())
+        {
+            Assert.Matches("^[a-z0-9][a-z0-9-]{0,29}$", tag.GetString());
+        }
+    }
+
     private static string FindRepositoryRoot()
     {
         for (DirectoryInfo? directory = new(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
