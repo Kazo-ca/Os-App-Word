@@ -185,7 +185,7 @@ Aucun chantier ne commence sans le feu vert de Benoit.
 
 | Quoi | Qui | État |
 | --- | --- | --- |
-| Correction du service worker de Kazo OS (décision 10) | Fil « Servir la page iframe des apps installées » | Lancé le 2026-11-13. Ne bloque que le chantier 5. |
+| Correction du service worker de Kazo OS (décision 10) | Fil « Servir la page iframe des apps installées » | PR [Os#451](https://github.com/Kazo-ca/Os/pull/451) (ADR 0243) prête le 2026-11-13, à fusionner. Rien à changer côté app. Ne bloque que le chantier 5. |
 | Forks `Kazo-ca/wordcraft`, `Kazo-ca/craft-libs`, `Kazo-ca/gridcraft` (décision 9) | Benoit, par le coordinateur | Avant le chantier 4. |
 | Réponse à la question 13 | Benoit | Avant le chantier 1. |
 

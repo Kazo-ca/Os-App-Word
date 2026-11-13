@@ -188,7 +188,7 @@ save it, reopen it; Save As; two windows at once.
 | Plan | `docs/word-plan` | nothing | Merged (PR [#1](https://github.com/Kazo-ca/Os-App-Word/pull/1)) |
 | Check of the plan | `docs/word-plan-verification` | plan | PR [#2](https://github.com/Kazo-ca/Os-App-Word/pull/2) |
 | Detailed integration plan | `docs/word-plan-verification` | check | PR [#2](https://github.com/Kazo-ca/Os-App-Word/pull/2) |
-| Kazo OS: iframe page of an installed app | separate thread in `Kazo-ca/Os` | decision 10 | Started 2026-11-13 |
+| Kazo OS: iframe page of an installed app | `fix/installed-app-iframe-page` in `Kazo-ca/Os` | decision 10 | PR [Os#451](https://github.com/Kazo-ca/Os/pull/451) (ADR 0243), to merge. Kazo Word will require the first OS version published after 3.3.0. |
 | 1. Solution and iframe | `word/1-solution` | plan, question 13 | Waiting for Benoit's go |
 | 2. Open and save | `word/2-open-save` | 1 | To do |
 | 3. Full proxy | `word/3-proxy` | 1 | To do |

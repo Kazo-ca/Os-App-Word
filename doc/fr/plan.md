@@ -195,7 +195,7 @@ deux fenêtres en même temps.
 | Plan | `docs/word-plan` | rien | Fusionné (PR [#1](https://github.com/Kazo-ca/Os-App-Word/pull/1)) |
 | Vérification du plan | `docs/word-plan-verification` | plan | PR [#2](https://github.com/Kazo-ca/Os-App-Word/pull/2) |
 | Plan d'intégration détaillé | `docs/word-plan-verification` | vérification | PR [#2](https://github.com/Kazo-ca/Os-App-Word/pull/2) |
-| Kazo OS : page d'iframe d'une app installée | fil à part dans `Kazo-ca/Os` | décision 10 | Lancé le 2026-11-13 |
+| Kazo OS : page d'iframe d'une app installée | `fix/installed-app-iframe-page` dans `Kazo-ca/Os` | décision 10 | PR [Os#451](https://github.com/Kazo-ca/Os/pull/451) (ADR 0243), à fusionner. Kazo Word demandera la première version de l'OS publiée après la 3.3.0. |
 | 1. Solution et iframe | `word/1-solution` | plan, question 13 | En attente du feu vert de Benoit |
 | 2. Ouvrir et enregistrer | `word/2-open-save` | 1 | À faire |
 | 3. Proxy complet | `word/3-proxy` | 1 | À faire |

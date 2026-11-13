@@ -182,7 +182,7 @@ work item starts without Benoit's go.
 
 | What | Who | State |
 | --- | --- | --- |
-| Fix of the Kazo OS service worker (decision 10) | Thread "Servir la page iframe des apps installées" | Started 2026-11-13. Only blocks work item 5. |
+| Fix of the Kazo OS service worker (decision 10) | Thread "Servir la page iframe des apps installées" | PR [Os#451](https://github.com/Kazo-ca/Os/pull/451) (ADR 0243) ready on 2026-11-13, to merge. Nothing to change on the app side. Only blocks work item 5. |
 | Forks `Kazo-ca/wordcraft`, `Kazo-ca/craft-libs`, `Kazo-ca/gridcraft` (decision 9) | Benoit, through the coordinator | Before work item 4. |
 | Answer to question 13 | Benoit | Before work item 1. |
 
