@@ -33,6 +33,45 @@
   <data name="TimedOut" xml:space="preserve">
     <value>WordCraft n'a pas répondu en {0} secondes.</value>
   </data>
+  <data name="PickDocumentTitle" xml:space="preserve">
+    <value>Ouvrir un document</value>
+  </data>
+  <data name="PickPictureTitle" xml:space="preserve">
+    <value>Insérer une image</value>
+  </data>
+  <data name="PickFontsTitle" xml:space="preserve">
+    <value>Ajouter des polices</value>
+  </data>
+  <data name="PickRecipientsTitle" xml:space="preserve">
+    <value>Choisir la liste des destinataires</value>
+  </data>
+  <data name="PickOtherTitle" xml:space="preserve">
+    <value>Choisir un fichier</value>
+  </data>
+  <data name="DocumentsFilter" xml:space="preserve">
+    <value>Documents</value>
+  </data>
+  <data name="PicturesFilter" xml:space="preserve">
+    <value>Images</value>
+  </data>
+  <data name="FontsFilter" xml:space="preserve">
+    <value>Polices</value>
+  </data>
+  <data name="RecipientsFilter" xml:space="preserve">
+    <value>Listes de destinataires</value>
+  </data>
+  <data name="AllFiles" xml:space="preserve">
+    <value>Tous les fichiers</value>
+  </data>
+  <data name="ProblemTitle" xml:space="preserve">
+    <value>Kazo Word</value>
+  </data>
+  <data name="ReadFailed" xml:space="preserve">
+    <value>Impossible de lire {0} : {1}</value>
+  </data>
+  <data name="NewWindowFailed" xml:space="preserve">
+    <value>Impossible d'ouvrir une nouvelle fenêtre Kazo Word : {0}</value>
+  </data>
   <data name="Untitled" xml:space="preserve">
     <value>Sans titre</value>
   </data>

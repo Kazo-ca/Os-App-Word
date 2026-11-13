@@ -57,7 +57,8 @@ public sealed class WordApp : AppDefinition
     /// <remarks>
     /// Work item 2: the OS Open and Save dialogs, the user's files (a file chosen in a dialog
     /// outside the home folder is reached through the dialog's grant), and <c>apps.launch</c> to
-    /// open a file in another Kazo Word window.
+    /// open a file in another Kazo Word window. Work item 3: the files picked in WordCraft are read
+    /// (pictures, fonts, recipients), and WordCraft's settings live in <c>~/.config/ca.kazo.word/</c>.
     /// </remarks>
     public override IReadOnlyList<string> Capabilities =>
     [
@@ -65,6 +66,8 @@ public sealed class WordApp : AppDefinition
         AppCapabilities.DialogFileSave,
         AppCapabilities.FileSystemUserHomeRead,
         AppCapabilities.FileSystemUserHomeWrite,
+        AppCapabilities.FileSystemPrivateRead,
+        AppCapabilities.FileSystemPrivateWrite,
         AppCapabilities.AppsLaunch,
     ];
 

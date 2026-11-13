@@ -35,14 +35,18 @@ public sealed class ManifestTests
     }
 
     [Fact]
-    public void The_app_asks_for_the_dialogs_the_home_folder_and_launching_itself()
+    public void The_app_asks_for_the_dialogs_the_home_folder_its_settings_folder_and_launching_itself()
     {
+        // Work item 2: Open and Save dialogs, the user's files, other windows. Work item 3: WordCraft's
+        // settings in ~/.config/ca.kazo.word (the app's private folder).
         Assert.Equal(
             [
                 AppCapabilities.DialogFileOpen,
                 AppCapabilities.DialogFileSave,
                 AppCapabilities.FileSystemUserHomeRead,
                 AppCapabilities.FileSystemUserHomeWrite,
+                AppCapabilities.FileSystemPrivateRead,
+                AppCapabilities.FileSystemPrivateWrite,
                 AppCapabilities.AppsLaunch,
             ],
             _app.Capabilities);
