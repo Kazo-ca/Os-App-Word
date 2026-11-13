@@ -444,9 +444,12 @@ Résultat (2026-11-13) :
   captures du Store.
 - Constat : avec SwiftShader, une capture de page ne montre pas ce que WebGPU dessine (le canevas
   sort vide) ; la passe de captures laisse WebGPU éteint, WordCraft dessine alors avec WebGL 2.
-- Ensuite : PR `word/base` → `main` (décision de Benoit), tag `v0.1.0` par « Tag a release », PR
-  au catalogue d'Os-AppMarketPlace, ligne dans `features.md` de Kazo OS ; l'installation depuis le
-  Store se vérifie une fois le catalogue publié.
+- Publié le 2026-11-13 : `word/base` fusionnée dans `main` (#12), tag `v0.1.0` par « Tag a
+  release », PR du catalogue Os-AppMarketPlace#21 (faite à la main : pas de `HACK_STORE_TOKEN` ;
+  l'étiquette `word processor`, refusée par le catalogue, est devenue `word-processor`, #14 ajoute
+  un test). **Terminé** : `npm run test:installed -- --store <os>` installe Kazo Word par
+  « Installer pour moi » dans le Kazo OS Store de l'OS publié 3.3.2, depuis le vrai catalogue, et un
+  double-clic sur un `.docx` l'ouvre.
 
 ### Ordre
 

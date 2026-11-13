@@ -203,5 +203,5 @@ deux fenêtres en même temps.
 | 2. Ouvrir et enregistrer | `word/2-open-save` | 1 | Fait le 2026-11-13 (résultat dans le [plan d'intégration](integration-plan.md#chantier-2--ouvrir-et-enregistrer-word2-open-save)), PR vers `word/base`. |
 | 3. Proxy complet | `word/3-proxy` | 1 | Fait le 2026-11-13 (résultat dans le [plan d'intégration](integration-plan.md)), PR [#7](https://github.com/Kazo-ca/Os-App-Word/pull/7) fusionnée dans `word/base`. |
 | 4. Build depuis les sources | `word/4-build-from-source` | 1, forks créés | Fait le 2026-11-13 (résultat dans le [plan d'intégration](integration-plan.md#chantier-4--build-depuis-les-sources-word4-build-from-source)), PR vers `word/base`. |
-| 5. Store | `word/5-store` | 2, 3, 4 | Fiche, avis et parcours de l'app installée faits le 2026-11-13 (résultat dans le [plan d'intégration](integration-plan.md#chantier-5--store-word5-store)) ; ensuite tag `v0.1.0` et PR du catalogue quand `word/base` arrive dans `main`. |
+| 5. Store | `word/5-store` | 2, 3, 4 | Fait le 2026-11-13 : Kazo Word 0.1.0 est dans le Kazo OS Store (résultat dans le [plan d'intégration](integration-plan.md#chantier-5--store-word5-store)). |
 | Piste en amont | fork de `storytold/craft-libs` | rien | À faire |

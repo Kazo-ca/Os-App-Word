@@ -136,6 +136,7 @@ The app as the Store installs it, in a published Kazo OS (not in CI: about five 
 dotnet build src/Kazo.Word -c Release -t:KazoOsPack
 # kazoos-wasm-<version>.zip of a Kazo OS release (3.3.2 or later), unzipped in <os>
 npm run test:installed -- <os> [packages folder] [screenshots folder]
+npm run test:installed -- --store <os>   # after a release: installs from the real Kazo OS Store
 ```
 
 It installs Kazo Word with `sudo kazopkg install Kazo-ca/Os-App-Word` (GitHub answered from the
