@@ -73,7 +73,7 @@
     <value>A new Kazo Word window could not be opened: {0}</value>
   </data>
   <data name="Untitled" xml:space="preserve">
-    <value>Untitled</value>
+    <value>Document1</value>
   </data>
   <data name="OpenTitle" xml:space="preserve">
     <value>Open a document</value>

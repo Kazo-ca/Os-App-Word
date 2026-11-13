@@ -111,11 +111,11 @@ test('a new document is saved where the user says, saved again in place, and reo
     await openApp(page, 'Kazo Word');
     const id = await waitForWindow(page, 1);
     const frame = await frameOf(page, id);
-    await expectTitle(page, id, 'Untitled — Kazo Word');
+    await expectTitle(page, id, 'Document1 — Kazo Word');
     assert.equal((await frame.evaluate(() => window.wordcraft.uiInspect({}))).ui.backstage, false, 'the start screen is closed');
 
     await execute(frame, 'text.insert', { text: 'Saved by Kazo Word' });
-    await expectTitle(page, id, '*Untitled — Kazo Word');
+    await expectTitle(page, id, '*Document1 — Kazo Word');
 
     // The first save of a new document asks where to write it.
     await execute(frame, 'file.save');
@@ -175,7 +175,7 @@ test('closing with changes asks; Cancel keeps the window, Yes saves before closi
     const id = await waitForWindow(page, 1);
     const frame = await frameOf(page, id);
     await execute(frame, 'text.insert', { text: 'Do not lose me' });
-    await expectTitle(page, id, '*Untitled — Kazo Word');
+    await expectTitle(page, id, '*Document1 — Kazo Word');
 
     const close = windowById(page, id).locator('header.window-chrome .chrome-button-close');
     const question = page.locator('.message-box-dialog', { hasText: 'Save the changes' });

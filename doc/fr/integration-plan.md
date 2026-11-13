@@ -285,7 +285,8 @@ Un essai qui doit prouver que WordCraft démarre dans une fenêtre Kazo.
 - Démarrage : un fichier demandé (argument de lancement) est lu avec `KazoFile` et envoyé par
   `open` ; sinon un document vide (`file.new`). Dans les deux cas l'écran d'accueil de WordCraft
   est fermé (`ui.backstage {"value": false}`).
-- Titre : `*nom — Kazo Word`, « Sans titre » avant le premier enregistrement.
+- Titre : `*nom — Kazo Word`. Avant le premier enregistrement, le nom que WordCraft affiche dans sa propre barre de titre, dans sa langue d'interface (celle de l'utilisateur Kazo) : `Document1` en anglais. La fenêtre le demande avec `ui.inspect` (`title`) une fois la langue choisie, pour que les deux barres de titre ne divergent jamais ; « Document1 » sert tant que WordCraft n'a pas répondu.
+- Enregistrement automatique (AutoSave) : grisé par WordCraft dans le navigateur, même hébergé. Le correctif amont (`autosave: true` dans le message `host`, PR craft-libs #713 et PR wordcraft #6015) est suivi par l'issue #17.
 - Fermeture : `ui.inspect` liste les documents ; « Oui » enregistre chacun
   (`engine.execute` `file.save` avec `doc`) et ne ferme qu'une fois tous écrits ; « Non » ferme ;
   « Annuler » garde la fenêtre. Si WordCraft ne répond pas, la fenêtre demande seulement s'il faut

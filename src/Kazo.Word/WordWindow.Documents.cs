@@ -37,8 +37,15 @@ public sealed partial class WordWindow : IWindowCloseGuard
     /// </summary>
     internal bool IsUntouchedBlank => _session.IsUntouchedBlank;
 
+    // WordCraft's own name for a document with no file yet (Document1 in its language), once it
+    // answered ui.inspect; the OS title bar shows the same name as the page.
+    private string? _untitledName;
+
+    /// <summary>Gets the name of a document that has no file yet, as WordCraft shows it.</summary>
+    private string Untitled => _untitledName ?? L["Untitled"];
+
     /// <summary>Gets the title the OS shows for this window: <c>*name — Kazo Word</c>.</summary>
-    internal string DocumentTitle => _session.Title(L["Untitled"], _startup.State == FrameState.Running);
+    internal string DocumentTitle => _session.Title(Untitled, _startup.State == FrameState.Running);
 
     /// <summary>
     /// Opens a file: in this window when it holds only an untouched blank document, otherwise in a
@@ -113,7 +120,7 @@ public sealed partial class WordWindow : IWindowCloseGuard
             }
 
             MessageBoxDialogResult discard = await MessageBox(
-                L["CloseTitle"], L["CloseUnanswered", _session.CurrentName ?? L["Untitled"]], MessageBoxType.YesNo, cancellationToken);
+                L["CloseTitle"], L["CloseUnanswered", _session.CurrentName ?? Untitled], MessageBoxType.YesNo, cancellationToken);
             return discard.Result == MessageBoxResult.Yes;
         }
 
