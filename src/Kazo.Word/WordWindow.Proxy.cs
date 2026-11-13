@@ -82,6 +82,18 @@ public sealed partial class WordWindow
             .OfType<string>()];
         string language = WordCraftLanguage.Pick(AppContext.Culture, codes);
         await frame.RequestAsync("ui.language", new Dictionary<string, object?> { ["value"] = language }, cancellationToken: AppContext.CancellationToken);
+        await TakeUntitledNameAsync(frame);
+    }
+
+    // The title bar names an unsaved document as WordCraft does, in the language just set.
+    private async Task TakeUntitledNameAsync(WordFrame frame)
+    {
+        FrameCommandResult inspect = await frame.RequestAsync("ui.inspect", cancellationToken: AppContext.CancellationToken);
+        if (UntitledName.From(inspect) is { } name && _session.CurrentName is null)
+        {
+            _untitledName = name;
+            await UpdateTitleAsync();
+        }
     }
 
     private async Task OnSchemeChangedAsync(string scheme)

@@ -1,5 +1,8 @@
 // Kazo Word as the Kazo OS Store installs it (work item 5 of doc/en/integration-plan.md):
-// `npm run test:installed -- <Kazo OS wwwroot> [packages] [screenshots folder]`.
+// `npm run test:installed -- [--store] <Kazo OS wwwroot> [packages] [screenshots folder]`.
+//
+// --store: installs from the real Kazo OS Store (the published catalog of Os-AppMarketPlace, read
+//   over the network) instead of `kazopkg install` from [packages]: the check after a release.
 //
 // <Kazo OS wwwroot>: a published Kazo OS, for example the kazoos-wasm-<version>.zip of a Kazo OS
 //   release, unzipped (the trimmed OS users run; 3.3.2 is the minimum).
@@ -19,7 +22,8 @@ import path from 'node:path';
 import { chromium } from 'playwright';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
-const [wwwrootArgument, packagesArgument, shotsArgument] = process.argv.slice(2);
+const fromStore = process.argv.includes('--store');
+const [wwwrootArgument, packagesArgument, shotsArgument] = process.argv.slice(2).filter(argument => argument !== '--store');
 if (!wwwrootArgument) {
     console.error('usage: npm run test:installed -- <Kazo OS wwwroot> [packages folder] [screenshots folder]');
     process.exit(2);
@@ -123,15 +127,70 @@ async function openApp(page, name) {
     await page.getByRole('button', { name: `Launch ${name}`, exact: true }).click();
 }
 
+/** `sudo kazopkg install` in the Terminal, as an administrator. */
+async function installWithKazopkg(page) {
+    await openApp(page, 'Terminal');
+    const rows = page.locator('[data-terminal-panel] .xterm-rows').first();
+    await waitForText(rows, text => text.includes('$'), 'the shell prompt');
+    await page.locator('[data-terminal-panel] .xterm-screen').first().click();
+    await page.keyboard.type(`sudo kazopkg install ${REPOSITORY}`);
+    await page.keyboard.press('Enter');
+    const prompt = page.locator('.credential-prompt-dialog, .aaa-window').first();
+    await prompt.waitFor({ state: 'visible', timeout: STEP_MS });
+    const login = prompt.locator('input[type=text]');
+    if (await login.count() > 0 && !(await login.inputValue())) await login.fill(LOGIN);
+    await prompt.locator('input[type=password]').fill(PASSWORD);
+    await prompt.locator('input[type=password]').press('Enter');
+    const output = await waitForText(rows, text => text.includes('available now') || /does not have|refused|error/i.test(text), 'the end of the installation');
+    if (!output.includes('available now')) throw new Error(`kazopkg did not install Kazo Word:\n${output}`);
+    log('kazopkg installed Kazo Word.');
+    await page.locator('[data-terminal-panel]').first().locator('xpath=ancestor::article[1]').locator('header.window-chrome .chrome-button-close').click();
+}
+
+/** The Kazo OS Store: search Kazo Word in the published catalog, "Install for me". */
+async function installFromStore(page) {
+    await openApp(page, 'Kazo OS Store');
+    const store = page.locator('.store-root').first();
+    await store.locator('input.store-search').fill('Kazo Word');
+    const card = store.locator('button.store-card', { hasText: 'Kazo Word' }).first();
+    await card.waitFor({ timeout: STEP_MS });
+    await card.click();
+    await store.getByRole('button', { name: 'Install for me', exact: true }).click({ timeout: STEP_MS });
+    // A first install from the catalog may ask an administrator.
+    const prompt = page.locator('.credential-prompt-dialog, .aaa-window').first();
+    const opened = store.getByRole('button', { name: 'Open', exact: true });
+    await Promise.race([
+        prompt.waitFor({ state: 'visible', timeout: STEP_MS }).then(async () => {
+            const login = prompt.locator('input[type=text]');
+            if (await login.count() > 0 && !(await login.inputValue())) await login.fill(LOGIN);
+            await prompt.locator('input[type=password]').fill(PASSWORD);
+            await prompt.locator('input[type=password]').press('Enter');
+        }),
+        opened.waitFor({ timeout: STEP_MS }),
+    ]).catch(() => {});
+    try {
+        await opened.waitFor({ timeout: STEP_MS * 2 });
+    } catch (error) {
+        const banner = await store.locator('.store-banner').allInnerTexts().catch(() => []);
+        throw new Error(`the Store did not install Kazo Word: ${banner.join(' | ')}`, { cause: error });
+    }
+    log('The Kazo OS Store installed Kazo Word.');
+    await store.locator('xpath=ancestor::article[1]').locator('header.window-chrome .chrome-button-close').click();
+}
+
 // Screenshots: WebGPU on SwiftShader paints nothing into a page screenshot, so the screenshot
 // run leaves WebGPU off and WordCraft draws with WebGL 2 (its fallback), which screenshots show.
-const browser = await chromium.launch(shots ? { args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] } : launchOptions);
+const browserOptions = shots ? { args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] } : { ...launchOptions };
+// The Store reads the catalog on GitHub: go through the machine's proxy when there is one.
+const proxy = process.env.HTTPS_PROXY ?? process.env.https_proxy;
+if (fromStore && proxy) browserOptions.proxy = { server: proxy, bypass: '127.0.0.1,localhost' };
+const browser = await chromium.launch(browserOptions);
 const errors = [];
 let page;
 try {
-    const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, ignoreHTTPSErrors: fromStore && Boolean(proxy) });
     // raw.githubusercontent.com, as kazopkg reads it (ADR 0182 of Kazo OS), answered locally.
-    await context.route(new RegExp(`^https://raw\\.githubusercontent\\.com/${REPOSITORY}/kazoos-packages/`), async route => {
+    if (!fromStore) await context.route(new RegExp(`^https://raw\\.githubusercontent\\.com/${REPOSITORY}/kazoos-packages/`), async route => {
         const relative = decodeURIComponent(new URL(route.request().url()).pathname).split('/kazoos-packages/')[1];
         const file = path.join(packages, relative);
         const headers = { 'Access-Control-Allow-Origin': '*' };
@@ -156,29 +215,17 @@ try {
     await page.getByRole('button', { name: 'Create local profile' }).click();
     await page.getByText('Applications', { exact: true }).waitFor({ timeout: STEP_MS });
 
-    // Install, as an administrator.
-    await openApp(page, 'Terminal');
-    const rows = page.locator('[data-terminal-panel] .xterm-rows').first();
-    await waitForText(rows, text => text.includes('$'), 'the shell prompt');
-    await page.locator('[data-terminal-panel] .xterm-screen').first().click();
-    await page.keyboard.type(`sudo kazopkg install ${REPOSITORY}`);
-    await page.keyboard.press('Enter');
-    const prompt = page.locator('.credential-prompt-dialog, .aaa-window').first();
-    await prompt.waitFor({ state: 'visible', timeout: STEP_MS });
-    const login = prompt.locator('input[type=text]');
-    if (await login.count() > 0 && !(await login.inputValue())) await login.fill(LOGIN);
-    await prompt.locator('input[type=password]').fill(PASSWORD);
-    await prompt.locator('input[type=password]').press('Enter');
-    const output = await waitForText(rows, text => text.includes('available now') || /does not have|refused|error/i.test(text), 'the end of the installation');
-    if (!output.includes('available now')) throw new Error(`kazopkg did not install Kazo Word:\n${output}`);
-    log('kazopkg installed Kazo Word.');
-    await page.locator('[data-terminal-panel]').first().locator('xpath=ancestor::article[1]').locator('header.window-chrome .chrome-button-close').click();
+    if (fromStore) {
+        await installFromStore(page);
+    } else {
+        await installWithKazopkg(page);
+    }
 
     // Write a document with the installed app and save it as .docx in the home folder.
     await openApp(page, 'Kazo Word');
     const first = await waitForNewWindow(page, []);
     const frame = await frameOf(page, first);
-    await expectTitle(page, first, 'Untitled — Kazo Word');
+    await expectTitle(page, first, 'Document1 — Kazo Word');
     await execute(frame, 'text.insert', { text: 'Written in Kazo Word, opened from the File Explorer.' });
     await execute(frame, 'file.save');
     const dialog = page.locator('section.file-dialog', { hasText: 'Save the document' });

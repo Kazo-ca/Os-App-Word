@@ -21,6 +21,7 @@ tests and the completion criterion. Each work-item thread starts from this page.
 | 16 | No Kazo menu for v1: WordCraft's File tab is enough (the SDK gives no window menu yet). | Benoit, 2026-11-13 |
 | 17 | Kazo OS raises its maximum file size (16 MiB today, ADR 0094) so the 60 MB `.wasm` installs: Kazo OS ADR 0245, 128 MiB per file, released in Kazo OS 3.3.2. | Benoit, 2026-11-13 |
 | 18 | The first Store version stays **0.1.0** (the manifest's version): the number says it is a first trial, WordCraft being in alpha. | Benoit, 2026-11-13 |
+| 19 | The Kazo Word window stays on its screen (`window.canChangeScreen: false`, Kazo OS ADR 0263, issue #19): changing screen reloads the WordCraft iframe. Kazo Word 0.1.1 declares it and needs Kazo OS 3.3.3. | Benoit, 2026-11-13 |
 
 ## 2. The three parts
 
@@ -279,7 +280,8 @@ A trial that must prove WordCraft starts in a Kazo window.
 - Start: a requested file (launch argument) is read with `KazoFile` and sent with `open`;
   otherwise a blank document (`file.new`). Either way WordCraft's start screen is closed
   (`ui.backstage {"value": false}`).
-- Title: `*name — Kazo Word`, "Untitled" before the first save.
+- Title: `*name — Kazo Word`. Before the first save, the name WordCraft shows in its own title bar, in its interface language (the Kazo user's): `Document1` in English. The window asks it with `ui.inspect` (`title`) once the language is set, so the two title bars never disagree; "Document1" is the fallback while WordCraft has not answered.
+- AutoSave: greyed out by WordCraft in the browser, even hosted. The upstream fix (`autosave: true` in the `host` message, craft-libs PR #713 and wordcraft PR #6015) is followed by issue #17.
 - Close: `ui.inspect` lists the documents; "Yes" saves each one (`engine.execute` `file.save`
   with `doc`) and closes only once all are written; "No" closes; "Cancel" keeps the window. If
   WordCraft does not answer, the window only asks whether to close without saving.
@@ -433,9 +435,24 @@ Result (2026-11-13):
   again after the install. With a third argument it also writes the Store screenshots.
 - Found: on SwiftShader, a page screenshot does not show what WebGPU draws (the canvas comes out
   empty); the screenshot run leaves WebGPU off, so WordCraft draws with WebGL 2.
-- Then: PR `word/base` → `main` (Benoit's decision), tag `v0.1.0` with "Tag a release", catalog
-  PR in Os-AppMarketPlace, row in Kazo OS's `features.md`; the Store install is checked once the
-  catalog is published.
+- Published on 2026-11-13: `word/base` merged into `main` (#12), tag `v0.1.0` with "Tag a
+  release", catalog PR Os-AppMarketPlace#21 (made by hand: no `HACK_STORE_TOKEN`; the tag
+  `word processor` was refused by the catalog and became `word-processor`, #14 adds a test).
+  **Done**: `npm run test:installed -- --store <os>` installs Kazo Word with "Install for me" in
+  the Kazo OS Store of the published OS 3.3.2, from the real catalog, and a double-click on a
+  `.docx` opens it.
+
+### Version 0.1.1 (`word/10-release-0-1-1`)
+
+- The window stays on its screen (decision 19): `WordApp.Window` sets `CanChangeScreen = false`,
+  so the manifest carries `window.canChangeScreen: false` (Kazo OS ADR 0263, issue #19). On a
+  second screen, the "Other screen" menu explains why instead of moving the window.
+- Submodule `external/KazoOs` on `v3.3.3`: minimum Kazo OS 3.3.3 (an older OS refuses the
+  manifest's new field).
+- Also in this version, from `word/base`: Store tags the catalog accepts (#14), the install
+  journey through the real Store (#16), an unsaved document named "Document1" as in WordCraft
+  (#18), and the README that shows the Store listing (#13).
+- Tag `v0.1.1`, then a catalog PR in Os-AppMarketPlace.
 
 ### Order
 

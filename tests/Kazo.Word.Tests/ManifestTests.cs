@@ -35,6 +35,14 @@ public sealed class ManifestTests
     }
 
     [Fact]
+    public void The_window_stays_on_its_screen()
+    {
+        // Decision 19 (Kazo OS ADR 0263, issue #19): changing screen reloads the WordCraft iframe.
+        WindowOptions window = Assert.IsType<WindowOptions>(_app.Window);
+        Assert.False(window.CanChangeScreen);
+    }
+
+    [Fact]
     public void The_app_asks_for_the_dialogs_the_home_folder_its_settings_folder_and_launching_itself()
     {
         // Work item 2: Open and Save dialogs, the user's files, other windows. Work item 3: WordCraft's

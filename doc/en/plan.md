@@ -196,5 +196,5 @@ save it, reopen it; Save As; two windows at once.
 | 2. Open and save | `word/2-open-save` | 1 | Done 2026-11-13 (result in the [integration plan](integration-plan.md#work-item-2-open-and-save-word2-open-save)), PR to `word/base`. |
 | 3. Full proxy | `word/3-proxy` | 1 | Done 2026-11-13 (result in the [integration plan](integration-plan.md)), PR [#7](https://github.com/Kazo-ca/Os-App-Word/pull/7) merged into `word/base`. |
 | 4. Build from source | `word/4-build-from-source` | 1, forks created | Done 2026-11-13 (result in the [integration plan](integration-plan.md#work-item-4-build-from-source-word4-build-from-source)), PR to `word/base`. |
-| 5. Store | `word/5-store` | 2, 3, 4 | Listing, notices and installed-app journey done 2026-11-13 (result in the [integration plan](integration-plan.md#work-item-5-store-word5-store)); then tag `v0.1.0` and catalog PR after `word/base` reaches `main`. |
+| 5. Store | `word/5-store` | 2, 3, 4 | Done 2026-11-13: Kazo Word 0.1.0 is in the Kazo OS Store (result in the [integration plan](integration-plan.md#work-item-5-store-word5-store)). |
 | Upstream track | fork of `storytold/craft-libs` | nothing | To do |

@@ -38,7 +38,12 @@ libre écrit en Rust, qui tourne ici dans une fenêtre de Kazo OS.
 - Le téléchargement est gros (environ 23 Mo, 61 Mo une fois installé) et chaque fenêtre charge sa
   propre copie de WordCraft (environ 130 Mo de mémoire pour la première fenêtre).
 - L'impression passe par la boîte d'impression du navigateur.
-- Demande Kazo OS 3.3.2 ou plus récent.
+- **L'enregistrement automatique (AutoSave) n'est pas encore disponible** : enregistrez avec
+  Ctrl+S (Kazo-ca/Os-App-Word#17, en attente de WordCraft).
+- La fenêtre reste sur son écran : avec plusieurs écrans, Kazo Word ne passe pas sur un autre
+  écran (le menu « Autre écran » dit pourquoi), car changer d'écran rechargerait WordCraft et
+  perdrait le document.
+- Demande Kazo OS 3.3.3 ou plus récent.
 
 ## Licence
 

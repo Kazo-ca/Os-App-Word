@@ -36,7 +36,12 @@ processor written in Rust, which runs here in a Kazo OS window.
 - The download is large (about 23 MB, 61 MB once installed) and each window loads its own copy of
   WordCraft (about 130 MB of memory for the first window).
 - Printing goes through the browser's print dialog.
-- Needs Kazo OS 3.3.2 or later.
+- **AutoSave is not available yet**: save with Ctrl+S (Kazo-ca/Os-App-Word#17, waiting for
+  WordCraft).
+- The window stays on its screen: with several screens, Kazo Word does not move to another one
+  (the "Other screen" menu says why), because changing screen would reload WordCraft and lose
+  the document.
+- Needs Kazo OS 3.3.3 or later.
 
 ## License
 

@@ -73,7 +73,7 @@
     <value>Impossible d'ouvrir une nouvelle fenêtre Kazo Word : {0}</value>
   </data>
   <data name="Untitled" xml:space="preserve">
-    <value>Sans titre</value>
+    <value>Document1</value>
   </data>
   <data name="OpenTitle" xml:space="preserve">
     <value>Ouvrir un document</value>
