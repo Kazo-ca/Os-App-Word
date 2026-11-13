@@ -433,9 +433,12 @@ Result (2026-11-13):
   again after the install. With a third argument it also writes the Store screenshots.
 - Found: on SwiftShader, a page screenshot does not show what WebGPU draws (the canvas comes out
   empty); the screenshot run leaves WebGPU off, so WordCraft draws with WebGL 2.
-- Then: PR `word/base` → `main` (Benoit's decision), tag `v0.1.0` with "Tag a release", catalog
-  PR in Os-AppMarketPlace, row in Kazo OS's `features.md`; the Store install is checked once the
-  catalog is published.
+- Published on 2026-11-13: `word/base` merged into `main` (#12), tag `v0.1.0` with "Tag a
+  release", catalog PR Os-AppMarketPlace#21 (made by hand: no `HACK_STORE_TOKEN`; the tag
+  `word processor` was refused by the catalog and became `word-processor`, #14 adds a test).
+  **Done**: `npm run test:installed -- --store <os>` installs Kazo Word with "Install for me" in
+  the Kazo OS Store of the published OS 3.3.2, from the real catalog, and a double-click on a
+  `.docx` opens it.
 
 ### Order
 
