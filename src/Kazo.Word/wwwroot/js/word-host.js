@@ -3,6 +3,7 @@
 // It creates the iframe that runs WordCraft (wwwroot/host/index.html), hands it one MessagePort
 // when it has loaded, and passes the proxy's messages to the window's C# (WordFrame). It decides
 // nothing. One call to `create` = one iframe and one port: two windows never share a channel.
+// `request` sends a `command` to the proxy and settles with its `result` (WordCraft's page API).
 
 /** Address of the iframe page, served by the app's Razor library next to this module. */
 export const FramePagePath = "../host/index.html";
@@ -32,7 +33,7 @@ export function frameUrl(base, { author = "", webgl = false } = {}) {
  * @param {HTMLElement} container Element of the window that holds the iframe.
  * @param {{ invokeMethodAsync(name: string, ...args: unknown[]): Promise<unknown> }} dotnet The WordFrame.
  * @param {{ author?: string, language?: string, webgl?: boolean, title?: string }} options
- * @returns {{ focus(): void, dispose(): void }}
+ * @returns {{ focus(): void, request(method: string, params?: object, timeoutMs?: number): Promise<unknown>, dispose(): void }}
  */
 export function create(container, dotnet, options = {}) {
     const iframe = document.createElement("iframe");
@@ -43,6 +44,19 @@ export function create(container, dotnet, options = {}) {
 
     let port = null;
     let disposed = false;
+    let nextCommandId = 1;
+    // Commands sent and not answered yet, by id: { resolve, reject }.
+    const pending = new Map();
+
+    // Every command still waiting fails: the page reloaded (its WordCraft is a new one) or the
+    // window is closing.
+    const abandonCommands = (reason) => {
+        for (const { reject } of pending.values()) {
+            reject(new Error(reason));
+        }
+
+        pending.clear();
+    };
 
     const deliver = (type, value) => {
         if (!disposed) {
@@ -69,8 +83,21 @@ export function create(container, dotnet, options = {}) {
                 // reaches the OS document, so the same event is replayed on the iframe element.
                 iframe.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, cancelable: true }));
                 break;
+            case "result": {
+                const waiting = pending.get(message.id);
+                if (waiting) {
+                    pending.delete(message.id);
+                    if (message.ok) {
+                        waiting.resolve(message.value ?? null);
+                    } else {
+                        waiting.reject(new Error(String(message.error ?? "unknown error")));
+                    }
+                }
+
+                break;
+            }
             default:
-                // Messages of the next work items (save, pick, command results) are not used yet.
+                // Messages of the next work items (save, pick) are not used yet.
                 break;
         }
     };
@@ -84,6 +111,7 @@ export function create(container, dotnet, options = {}) {
         }
 
         port?.close();
+        abandonCommands("WordCraft restarted");
         const channel = new MessageChannel();
         port = channel.port1;
         port.onmessage = onMessage;
@@ -101,8 +129,20 @@ export function create(container, dotnet, options = {}) {
         focus() {
             iframe.contentWindow?.focus();
         },
+        request(method, params = {}, timeoutMs = 0) {
+            if (!port || disposed) {
+                return Promise.reject(new Error("WordCraft is not connected"));
+            }
+
+            const id = nextCommandId++;
+            return new Promise((resolve, reject) => {
+                pending.set(id, { resolve, reject });
+                port.postMessage({ type: "command", id, method, params, timeoutMs });
+            });
+        },
         dispose() {
             disposed = true;
+            abandonCommands("the window closed");
             port?.close();
             iframe.remove();
         },

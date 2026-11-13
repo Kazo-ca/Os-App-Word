@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
@@ -77,6 +78,52 @@ public sealed class WordFrame : IAsyncDisposable
         }
     }
 
+    /// <summary>
+    /// Runs a command of WordCraft's page API (<c>window.wordcraft.request</c>; WordCraft's
+    /// <c>docs/control-protocol.md</c> lists them), such as <c>ui.inspect</c>, <c>file.save</c> or
+    /// <c>ui.theme</c>. Any other method name is a command id of WordCraft's engine.
+    /// </summary>
+    /// <param name="method">The method or command id.</param>
+    /// <param name="parameters">Its parameters, serialized to JSON; <see langword="null"/> for none.</param>
+    /// <param name="timeout">How long WordCraft has to answer; the proxy's default (10 s) when <see langword="null"/>.</param>
+    /// <param name="cancellationToken">Stops waiting (the window closes).</param>
+    /// <returns>
+    /// WordCraft's answer. A failure is a result, never an exception: WordCraft refused the command,
+    /// did not answer in time, is not started yet, or its page reloaded.
+    /// </returns>
+    public async Task<FrameCommandResult> RequestAsync(
+        string method,
+        object? parameters = null,
+        TimeSpan? timeout = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(method);
+        if (_frame is null)
+        {
+            return FrameCommandResult.Failure("WordCraft is not connected");
+        }
+
+        int timeoutMs = timeout is { } limit ? (int)Math.Ceiling(limit.TotalMilliseconds) : 0;
+        try
+        {
+            JsonElement value = await _frame.InvokeAsync<JsonElement>(
+                "request",
+                cancellationToken,
+                method,
+                parameters ?? new Dictionary<string, object?>(),
+                timeoutMs);
+            return new FrameCommandResult(true, value, null);
+        }
+        catch (JSException exception)
+        {
+            return FrameCommandResult.Failure(FirstLine(exception.Message));
+        }
+        catch (JSDisconnectedException)
+        {
+            return FrameCommandResult.Failure("the window closed");
+        }
+    }
+
     /// <summary>Called by <c>word-host.js</c> for each message of the proxy.</summary>
     /// <param name="type">The message name, one of <see cref="FrameMessages"/>.</param>
     /// <param name="value">Its value, as text.</param>
@@ -88,6 +135,13 @@ public sealed class WordFrame : IAsyncDisposable
         FrameMessages.Failed => Failed?.Invoke(value) ?? Task.CompletedTask,
         _ => Task.CompletedTask,
     };
+
+    // A JSException message carries the JavaScript stack after the first line.
+    private static string FirstLine(string message)
+    {
+        int end = message.IndexOf('\n', StringComparison.Ordinal);
+        return (end < 0 ? message : message[..end]).Trim();
+    }
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
