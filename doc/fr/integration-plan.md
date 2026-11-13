@@ -19,6 +19,7 @@ qui est livré, les tests et le critère de fin. Chaque fil de chantier part de 
 | 14 | Kazo OS garde un ordre stable des fenêtres dans la page ; une fenêtre qui passe devant ne recharge plus son iframe (correction dans `Kazo-ca/Os`). | Benoit, 2026-11-13 |
 | 15 | Le `.wasm` réel fait 61 Mo : la décision 13 reste. | Benoit, 2026-11-13 |
 | 16 | Pas de menu Kazo pour la v1 : l'onglet Fichier de WordCraft suffit (le SDK ne donne pas encore de menu de fenêtre). | Benoit, 2026-11-13 |
+| 17 | Kazo OS relève sa taille maximale de fichier (16 Mio aujourd'hui, ADR 0094) pour que le `.wasm` de 60 Mo s'installe : nouvelle ADR et version 3.4.0 (fil à part de `Kazo-ca/Os`). | Benoit, 2026-11-13 |
 
 ## 2. Les trois parties
 
@@ -199,8 +200,9 @@ Aucun chantier ne commence sans le feu vert de Benoit.
 
 | Quoi | Qui | État |
 | --- | --- | --- |
-| Ordre stable des fenêtres dans la page (décision 14) | Fil Kazo OS demandé au coordinateur le 2026-11-13 | À faire. Avant de fermer le chantier 1 (test du document qui survit) et avant le chantier 5. |
-| Correction du service worker de Kazo OS (décision 10) | Fil « Servir la page iframe des apps installées » | PR [Os#451](https://github.com/Kazo-ca/Os/pull/451) (ADR 0243) prête le 2026-11-13, à fusionner. Rien à changer côté app. Ne bloque que le chantier 5. |
+| Ordre stable des fenêtres dans la page (décision 14) | Fil « Garder l'ordre des fenêtres stable » | Fait : PR [Os#452](https://github.com/Kazo-ca/Os/pull/452) (ADR 0244), publiée dans Kazo OS 3.3.1 le 2026-11-13. |
+| Correction du service worker de Kazo OS (décision 10) | Fil « Servir la page iframe des apps installées » | Fait : PR [Os#451](https://github.com/Kazo-ca/Os/pull/451) (ADR 0243), publiée dans Kazo OS 3.3.1 le 2026-11-13. Kazo Word demande Kazo OS 3.3.1 ou plus. |
+| Un fichier de plus de 16 Mio dans Kazo OS (décision 17) | Fil Kazo OS demandé au coordinateur le 2026-11-13 | À faire : nouvelle ADR, puis Kazo OS 3.4.0. Le système de fichiers de l'OS refuse tout fichier de plus de 16 Mio (ADR 0094), et le `.wasm` en fait 60 : l'installation dans un OS publié échoue. Bloque le chantier 5. |
 | Forks `Kazo-ca/wordcraft`, `Kazo-ca/craft-libs`, `Kazo-ca/gridcraft` (décision 9) | Benoit, par le coordinateur | Avant le chantier 4. |
 
 ### Chantier 1 : solution et iframe (`word/1-solution`)
@@ -239,7 +241,14 @@ Un essai qui doit prouver que WordCraft démarre dans une fenêtre Kazo.
   fenêtre passe devant, son élément est déplacé, et un iframe déplacé se recharge : WordCraft
   repart de zéro et le document est perdu (décision 14, section 9). `word-host.js` reconnecte
   la page rechargée, mais le document est perdu.
-- OS publié : à essayer une fois Os#451 publiée (décision 10).
+- Kazo OS 3.3.1 (2026-11-13) corrige les deux : un document survit quand sa fenêtre passe devant
+  puis derrière (parcours Playwright, en échec sur 3.3.0, réussi sur 3.3.1), et le service worker
+  publié sert la page de l'iframe. Le sous-module est sur `v3.3.1`, la version minimale de l'OS.
+  L'OS fait aussi passer devant une fenêtre qui reçoit le focus par un clic dans son iframe ; le
+  `pointerdown` que `word-host.js` rejoue sur l'iframe reste, il ne fait que le même effet.
+- **OS publié (3.3.1)** : `sudo kazopkg install Kazo-ca/Os-App-Word` lit le paquet puis échoue
+  sur le `.wasm` : `FileTooLarge`. Le système de fichiers de Kazo OS refuse tout fichier de plus
+  de 16 Mio (ADR 0094), et le `.wasm` fait 60 Mo (22 Mo en gzip). Décision 17 : Kazo OS relève sa limite.
 
 ### Chantier 2 : ouvrir et enregistrer (`word/2-open-save`)
 
@@ -431,7 +440,8 @@ Chaque proposition acceptée retire un contournement du proxy.
 | WordCraft change vite (une version par semaine) | Version épinglée ; les tests du proxy et les parcours Playwright disent ce qu'une montée de version casse. |
 | Le Store analyse le JavaScript de l'app (CodeQL) | Le `.js` généré de WordCraft sera analysé : à vérifier au chantier 5, avant le tag. |
 | Mémoire : chaque fenêtre charge son propre WordCraft | Mesuré au chantier 1 : environ 130 Mo pour la première fenêtre, 25 Mo par fenêtre de plus, sans document. À refaire avec de gros documents au chantier 2. |
-| Une fenêtre qui passe devant recharge son iframe (Kazo OS déplace son élément dans la page) | Décision 14 : Kazo OS garde un ordre stable des fenêtres dans la page, l'empilement restant en `z-index` (fil à part de `Kazo-ca/Os`). Le test « le document survit quand sa fenêtre passe devant » arrive avec la montée du sous-module vers cette version. |
+| Une fenêtre qui passe devant recharge son iframe (Kazo OS déplace son élément dans la page) | Décision 14 : Kazo OS garde un ordre stable des fenêtres dans la page, l'empilement restant en `z-index` (fil à part de `Kazo-ca/Os`). Publié dans Kazo OS 3.3.1 ; le parcours « le document survit quand sa fenêtre passe devant » le vérifie. |
+| Kazo OS refuse un fichier de plus de 16 Mio (ADR 0094), le `.wasm` fait 60 Mo | Décision 17 : Kazo OS relève sa limite (nouvelle ADR, version 3.4.0). Bloque l'installation et le chantier 5 jusque-là. |
 | Le `.wasm` fait 61 Mo, pas 13 Mo | Décision 15 : la décision 13 reste. |
 | Réglages de WordCraft partagés par tous les utilisateurs Kazo (même origine) | Essai du chantier 3 tenu : réglages dans `~/.config/ca.kazo.word/`. Restent partagées les polices ajoutées (IndexedDB). |
 | GPU absent | Écran d'erreur clair (`failed`). |

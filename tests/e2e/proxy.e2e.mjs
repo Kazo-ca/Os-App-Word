@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
-import { boot, openApp, startHost } from './host.mjs';
+import { boot, openApp, runInTerminal, startHost } from './host.mjs';
 
 const READY_TIMEOUT_MS = 90_000;
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -29,6 +29,28 @@ after(async () => {
     await browser?.close();
     host?.stop();
 });
+
+/** WordCraft's settings file of the signed-in user (WebStorageFile). */
+const SETTINGS_FILE = '~/.config/ca.kazo.word/web-storage.json';
+
+/**
+ * Prints the user's settings file in a Terminal until it holds `text`.
+ * @param {import('playwright').Page} page The page.
+ * @param {string} text What the file must hold.
+ */
+async function waitForSettingsFile(page, text) {
+    await runInTerminal(page, `cat ${SETTINGS_FILE}`);
+    const rows = page.locator('.xterm-rows').last();
+    const deadline = Date.now() + 30_000;
+    while (!(await rows.innerText()).includes(text)) {
+        if (Date.now() > deadline) {
+            throw new Error(`${SETTINGS_FILE} does not hold "${text}": ${await rows.innerText()}`);
+        }
+        await page.waitForTimeout(1_000);
+        await page.locator('.xterm-helper-textarea').last().focus();
+        await page.keyboard.type(`cat ${SETTINGS_FILE}\n`, { delay: 5 });
+    }
+}
 
 /** A fresh page with the OS booted; `choosers` counts the browser file choosers that opened. */
 async function bootPage() {
@@ -173,8 +195,9 @@ test('WordCraft\'s settings belong to the Kazo user: a new window starts with th
         }
         return false;
     }, null, { timeout: 10_000 });
-    // The window writes the file half a second after WordCraft's last write.
-    await page.waitForTimeout(1_500);
+    // The window writes the file half a second after WordCraft's last write, and a busy page can
+    // take longer: wait until the user's file holds the setting, as the next window will read it.
+    await waitForSettingsFile(page, 'characters');
     const second = await openWord(page, 2);
 
     const count = await second.frame.evaluate(() => window.wordcraft.request('ui.statusCount', {}));
