@@ -24,6 +24,10 @@ public sealed class WebStorageFile
     private readonly Func<string, CancellationToken, Task> _createDirectory;
     private readonly Dictionary<string, string> _entries = new(StringComparer.Ordinal);
 
+    // One write at a time: the Kazo OS file system can take longer than the window's half second
+    // between two saves, and an older write that finished last would put back older values.
+    private readonly SemaphoreSlim _saving = new(1, 1);
+
     /// <summary>Creates the file of a user, read and written through the Kazo OS file system.</summary>
     /// <param name="homeDirectory">The user's home (<c>AppContext.HomeDirectory</c>).</param>
     public WebStorageFile(string homeDirectory)
@@ -128,10 +132,29 @@ public sealed class WebStorageFile
         return true;
     }
 
-    /// <summary>Writes the entries, creating the folder the first time.</summary>
+    /// <summary>
+    /// Writes the entries, creating the folder the first time. A save that starts while another is
+    /// writing waits for it, then writes the entries as they are at that moment: the last save
+    /// always leaves the latest values in the file.
+    /// </summary>
     /// <param name="cancellationToken">Cancels the write.</param>
     /// <returns>A task completed once the file is written.</returns>
     public async Task SaveAsync(CancellationToken cancellationToken = default)
+    {
+        await _saving.WaitAsync(cancellationToken);
+        try
+        {
+            string text = Serialize();
+            await _createDirectory(Directory, cancellationToken);
+            await _writeAllText(Path, text, cancellationToken);
+        }
+        finally
+        {
+            _saving.Release();
+        }
+    }
+
+    private string Serialize()
     {
         using MemoryStream buffer = new();
         using (Utf8JsonWriter writer = new(buffer, new JsonWriterOptions { Indented = true }))
@@ -145,7 +168,6 @@ public sealed class WebStorageFile
             writer.WriteEndObject();
         }
 
-        await _createDirectory(Directory, cancellationToken);
-        await _writeAllText(Path, System.Text.Encoding.UTF8.GetString(buffer.ToArray()), cancellationToken);
+        return System.Text.Encoding.UTF8.GetString(buffer.ToArray());
     }
 }
