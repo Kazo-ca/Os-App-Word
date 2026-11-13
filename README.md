@@ -63,7 +63,7 @@ ArtCraft team and are not used by Kazo Word.
 
 ## Try it
 
-<!-- "Open in Kazo OS" link: https://os.kazo.ca/?autolunch=ca.kazo.word goes here once Kazo OS supports it. -->
+<!-- "Open in Kazo OS" link: https://os.kazo.ca/?autolaunch=ca.kazo.word goes here once Kazo OS supports it. -->
 
 Open [Kazo OS](https://os.kazo.ca/) and install Kazo Word from the **Kazo OS Store** (category Productivity), or in the Kazo OS Terminal, as an administrator: `sudo kazopkg install Kazo-ca/Os-App-Word`.
 
