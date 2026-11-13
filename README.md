@@ -1,12 +1,79 @@
 > [Version française](readme-fr.md)
 
+<!-- Store listing: the same text as store/description.en.md and the same screenshots as the Kazo OS Store (store/screenshots/). Change them together. -->
+
+<img src="store/icon.png" alt="" width="96" align="right">
+
 # Kazo Word
 
-A word processor for Kazo OS: [WordCraft](https://github.com/storytold/wordcraft) (MIT or
-Apache-2.0) runs in an iframe of a Kazo OS window, driven by the window's C# through a small
-proxy. Work in progress: see the [plan](doc/en/plan.md) and the
-[integration plan](doc/en/integration-plan.md). WordCraft's notices and the licenses in the
-package: [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
+A word processor for Kazo OS, for `.docx` and `.odt` documents. Kazo Word is based on
+[WordCraft](https://github.com/storytold/wordcraft) by the ArtCraft team, an open-source word
+processor written in Rust, which runs here in a Kazo OS window.
+
+## Write
+
+- Pages laid out as they print: styles, fonts, paragraphs, lists, tables, pictures, headers and
+  footers, page numbers, footnotes, a table of contents.
+- WordCraft's ribbon, its command search and its shortcuts; English spelling checked as you type.
+- Several windows at once, one document per window.
+
+## Your Kazo OS files
+
+- Double-click a `.docx`, `.odt`, `.rtf`, `.doc`, `.md`, `.html` or `.txt` file in the File
+  Explorer, or use "Open with": the document opens in Kazo Word.
+- Save rewrites the file you opened; Save As and the first save of a new document use the Kazo OS
+  save dialog. Exports to PDF, PNG, text and Markdown are copies: the document stays bound to its
+  file.
+- The title bar shows `*` while the document has unsaved changes, and closing the window asks
+  before losing them.
+- File › Open and the pictures, fonts and mail-merge lists you pick in WordCraft come from Kazo OS
+  files, through the Kazo OS dialog.
+- Kazo Word follows the OS theme (light or dark) and language; its settings are kept per Kazo OS
+  user in `~/.config/ca.kazo.word/`.
+
+## Known limits
+
+- **WordCraft is in alpha.** Most documents open and save well, but keep a copy of the important
+  ones.
+- **Spelling is checked in English only** in the web version of WordCraft.
+- **Asian fonts**: only small fonts are included; Chinese, Japanese and Korean text may look wrong.
+- WordCraft draws with **WebGPU or WebGL 2**: a browser or computer with neither shows an error
+  screen instead of the document.
+- The download is large (about 23 MB, 61 MB once installed) and each window loads its own copy of
+  WordCraft (about 130 MB of memory for the first window).
+- Printing goes through the browser's print dialog.
+- Needs Kazo OS 3.3.2 or later.
+
+## License
+
+Kazo Word is free software under the MIT license. WordCraft is under the MIT or Apache-2.0 license;
+its notices and the licenses of the fonts and dictionaries it includes ship with the app (see
+`THIRD-PARTY-NOTICES.md` in the repository). The ArtCraft name and logos are trademarks of the
+ArtCraft team and are not used by Kazo Word.
+
+## Screenshots
+
+<p>
+  <img src="store/screenshots/1.png" alt="Kazo Word, screenshot 1" height="240">
+  <img src="store/screenshots/2.png" alt="Kazo Word, screenshot 2" height="240">
+  <img src="store/screenshots/3.png" alt="Kazo Word, screenshot 3" height="240">
+</p>
+
+<!-- /Store listing -->
+
+## Try it
+
+<!-- "Open in Kazo OS" link: https://os.kazo.ca/?autolunch=ca.kazo.word goes here once Kazo OS supports it. -->
+
+Open [Kazo OS](https://os.kazo.ca/) and install Kazo Word from the **Kazo OS Store** (category Productivity), or in the Kazo OS Terminal, as an administrator: `sudo kazopkg install Kazo-ca/Os-App-Word`.
+
+## About Kazo OS
+
+[Kazo OS](https://github.com/Kazo-ca/Os) is a simulated operating system that runs in the browser, written in C# with Blazor WebAssembly. It gives a complete environment to build and run applications: desktop and windows, a persistent file system, processes, a POSIX shell, a simulated network, the Kazo OS Store, and a public SDK (NuGet packages) to make apps such as this one. Try it at <https://os.kazo.ca/> (PWA, works offline).
+
+## Development
+
+- Plan: [plan](doc/en/plan.md) and [integration plan](doc/en/integration-plan.md). WordCraft's notices and the licenses in the package: [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
 
 | Folder | Content |
 | --- | --- |
@@ -23,7 +90,7 @@ package: [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
 | `store/` | What the Kazo OS Store shows: icon (PNG 256×256), short descriptions, descriptions, screenshots, `store.json` |
 | `THIRD-PARTY-NOTICES.md` | WordCraft and what it bundles; linked into the package with `LICENSE` (`wwwroot/legal/`) |
 
-## WordCraft's build
+### WordCraft's build
 
 `src/Kazo.Word/wwwroot/wordcraft/` is never edited by hand (decision 13 of the plan). It is
 compiled from the `external/wordcraft` submodule, our fork of WordCraft, and its
@@ -53,7 +120,7 @@ tools/vendor-wordcraft.sh --dir <folder>  # a folder built from external/wordcra
 
 The `.wasm` is 61 MB: GitHub warns about it on push, and accepts it.
 
-## Tests
+### Tests
 
 ```bash
 dotnet build Kazo.Word.slnx -c Release
@@ -78,7 +145,7 @@ it. With a screenshots folder it also writes the Store's screenshots (`store/scr
 Launch `launch ca.kazo.word --webgl` in the Kazo OS terminal to force WordCraft's WebGL 2
 renderer.
 
-## First steps
+### First steps
 
 ```bash
 # A repository created from the GitHub template already has the submodule:
@@ -93,7 +160,7 @@ git -C external/KazoOs checkout v<Kazo OS version>
 Then open `Kazo.Word.slnx` in Visual Studio or Rider and start `Kazo.Word.Os`, or run
 `dotnet run --project src/Kazo.Word.Os`.
 
-## The Kazo OS version
+### The Kazo OS version
 
 `external/KazoOs/wasm2/KazoOs/build/Versions.props` is the Kazo OS version of this repository.
 To move to another version, move the submodule to its tag and commit it:
@@ -107,7 +174,7 @@ git add external/KazoOs
 Never edit the submodule: the OS is not modified from an app repository, and CI refuses a
 submodule with local changes or off its tag.
 
-## Two build profiles
+### Two build profiles
 
 | Profile | Kazo OS comes from | Use |
 | --- | --- | --- |
@@ -116,7 +183,7 @@ submodule with local changes or off its tag.
 
 Force either one with `-p:KazoOsUseSource=true` or `false`.
 
-## Publishing to the Kazo OS Store
+### Publishing to the Kazo OS Store
 
 1. Fill `store/` (icon, short descriptions, descriptions, category and tags in `store.json`).
 2. Change `Version` in the app's `[AppManifest]` class and commit it to `main`, then tag it: run the
@@ -141,7 +208,7 @@ Force either one with `-p:KazoOsUseSource=true` or `false`.
 The catalog never takes a binary from you: once your pull request is reviewed and merged, its CI
 compiles the app at the tagged commit.
 
-## Publishing on the `kazoos-packages` branch
+### Publishing on the `kazoos-packages` branch
 
 The same `v*` tag also runs **Publish the Kazo OS packages**: it packs the app and pushes it to the
 `kazoos-packages` branch of this repository, keeping the versions already published. Kazo OS
@@ -152,6 +219,6 @@ These packages are not signed: apps are signed only in the Kazo OS Store reposit
 them by their SHA-256 and asks an administrator before installing from an untrusted source. Users
 who want a signed package install your app from the Kazo OS Store.
 
-## Plan
+### Plan
 
 The plan of the Kazo Word app (WordCraft in Kazo OS) is in [`doc/en/plan.md`](doc/en/plan.md); the documentation index is [`doc/en/README.md`](doc/en/README.md).

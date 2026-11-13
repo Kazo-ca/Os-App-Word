@@ -1,12 +1,81 @@
 > [English version](README.md)
 
+<!-- Fiche du Store : le même texte que store/description.fr.md et les mêmes captures que le Kazo OS Store (store/screenshots/). Les changer ensemble. -->
+
+<img src="store/icon.png" alt="" width="96" align="right">
+
 # Kazo Word
 
-Un traitement de texte pour Kazo OS : [WordCraft](https://github.com/storytold/wordcraft) (MIT ou
-Apache-2.0) tourne dans un iframe d'une fenêtre Kazo OS, piloté par le C# de la fenêtre à
-travers un petit proxy. En cours de développement : voir le [plan](doc/fr/plan.md) et le
-[plan d'intégration](doc/fr/integration-plan.md). Les avis de WordCraft et les licences du paquet :
-[THIRD-PARTY-NOTICES-fr.md](THIRD-PARTY-NOTICES-fr.md).
+Un traitement de texte pour Kazo OS, pour les documents `.docx` et `.odt`. Kazo Word est basé sur
+[WordCraft](https://github.com/storytold/wordcraft) de l'équipe ArtCraft, un traitement de texte
+libre écrit en Rust, qui tourne ici dans une fenêtre de Kazo OS.
+
+## Écrire
+
+- Des pages mises en forme comme à l'impression : styles, polices, paragraphes, listes, tableaux,
+  images, en-têtes et pieds de page, numéros de page, notes de bas de page, table des matières.
+- Le ruban de WordCraft, sa recherche de commandes et ses raccourcis ; orthographe anglaise vérifiée
+  pendant la frappe.
+- Plusieurs fenêtres à la fois, un document par fenêtre.
+
+## Vos fichiers Kazo OS
+
+- Double-cliquez sur un fichier `.docx`, `.odt`, `.rtf`, `.doc`, `.md`, `.html` ou `.txt` dans
+  l'Explorateur de fichiers, ou utilisez « Ouvrir avec » : le document s'ouvre dans Kazo Word.
+- Enregistrer réécrit le fichier ouvert ; Enregistrer sous et le premier enregistrement d'un
+  nouveau document passent par la boîte d'enregistrement de Kazo OS. Les exports PDF, PNG, texte
+  et Markdown sont des copies : le document reste lié à son fichier.
+- La barre de titre affiche `*` tant que le document a des changements non enregistrés, et fermer
+  la fenêtre demande avant de les perdre.
+- Fichier › Ouvrir, et les images, polices et listes de publipostage choisies dans WordCraft,
+  viennent des fichiers de Kazo OS, par la boîte de dialogue de Kazo OS.
+- Kazo Word suit le thème (clair ou sombre) et la langue de l'OS ; ses réglages sont gardés par
+  utilisateur de Kazo OS dans `~/.config/ca.kazo.word/`.
+
+## Limites connues
+
+- **WordCraft est en alpha.** La plupart des documents s'ouvrent et s'enregistrent bien, mais
+  gardez une copie des documents importants.
+- **L'orthographe est vérifiée en anglais seulement** dans la version web de WordCraft.
+- **Polices asiatiques** : seules de petites polices sont incluses ; le chinois, le japonais et le
+  coréen peuvent mal s'afficher.
+- WordCraft dessine avec **WebGPU ou WebGL 2** : un navigateur ou un ordinateur qui n'a ni l'un ni
+  l'autre affiche un écran d'erreur au lieu du document.
+- Le téléchargement est gros (environ 23 Mo, 61 Mo une fois installé) et chaque fenêtre charge sa
+  propre copie de WordCraft (environ 130 Mo de mémoire pour la première fenêtre).
+- L'impression passe par la boîte d'impression du navigateur.
+- Demande Kazo OS 3.3.2 ou plus récent.
+
+## Licence
+
+Kazo Word est un logiciel libre sous licence MIT. WordCraft est sous licence MIT ou Apache-2.0 ; ses
+avis et les licences des polices et dictionnaires qu'il inclut sont livrés avec l'app (voir
+`THIRD-PARTY-NOTICES-fr.md` dans le dépôt). Le nom et les logos ArtCraft sont des marques de
+l'équipe ArtCraft et ne sont pas utilisés par Kazo Word.
+
+## Captures d'écran
+
+<p>
+  <img src="store/screenshots/1.png" alt="Kazo Word, capture 1" height="240">
+  <img src="store/screenshots/2.png" alt="Kazo Word, capture 2" height="240">
+  <img src="store/screenshots/3.png" alt="Kazo Word, capture 3" height="240">
+</p>
+
+<!-- /Fiche du Store -->
+
+## Essayer
+
+<!-- Lien « Ouvrir dans Kazo OS » : https://os.kazo.ca/?autolunch=ca.kazo.word va ici quand Kazo OS le prendra en charge. -->
+
+Ouvrez [Kazo OS](https://os.kazo.ca/) et installez Kazo Word depuis le **Kazo OS Store** (catégorie Productivité), ou dans le Terminal de Kazo OS, en administrateur : `sudo kazopkg install Kazo-ca/Os-App-Word`.
+
+## À propos de Kazo OS
+
+[Kazo OS](https://github.com/Kazo-ca/Os) est un système d'exploitation simulé qui tourne dans le navigateur, écrit en C# avec Blazor WebAssembly. Il offre un environnement complet pour développer et exécuter des applications : bureau et fenêtres, système de fichiers persistant, processus, shell POSIX, réseau simulé, le Kazo OS Store, et un SDK public (paquets NuGet) pour créer des apps comme celle-ci. Essayez-le sur <https://os.kazo.ca/> (PWA, fonctionne hors ligne).
+
+## Développement
+
+- Plan : [plan](doc/fr/plan.md) et [plan d'intégration](doc/fr/integration-plan.md). Les avis de WordCraft et les licences du paquet : [THIRD-PARTY-NOTICES-fr.md](THIRD-PARTY-NOTICES-fr.md).
 
 | Dossier | Contenu |
 | --- | --- |
@@ -23,7 +92,7 @@ travers un petit proxy. En cours de développement : voir le [plan](doc/fr/plan.
 | `store/` | Ce que montre le Kazo OS Store : icône (PNG 256×256), descriptions courtes, descriptions, captures d'écran, `store.json` |
 | `THIRD-PARTY-NOTICES-fr.md` | WordCraft et ce qu'il embarque ; lié dans le paquet avec `LICENSE` (`wwwroot/legal/`) |
 
-## Le build de WordCraft
+### Le build de WordCraft
 
 `src/Kazo.Word/wwwroot/wordcraft/` n'est jamais modifié à la main (décision 13 du plan). Il est
 compilé depuis le sous-module `external/wordcraft`, notre fork de WordCraft, et son
@@ -54,7 +123,7 @@ tools/vendor-wordcraft.sh --dir <dossier> # un dossier compilé depuis external/
 
 Le `.wasm` fait 61 Mo : GitHub avertit au push, et l'accepte.
 
-## Tests
+### Tests
 
 ```bash
 dotnet build Kazo.Word.slnx -c Release
@@ -80,7 +149,7 @@ que Kazo Word l'ouvre. Avec un dossier de captures, il écrit aussi les captures
 Lancez `launch ca.kazo.word --webgl` dans le terminal de Kazo OS pour forcer le rendu WebGL 2
 de WordCraft.
 
-## Premiers pas
+### Premiers pas
 
 ```bash
 # Un dépôt créé depuis le template GitHub a déjà le sous-module :
@@ -95,7 +164,7 @@ git -C external/KazoOs checkout v<version de Kazo OS>
 Ouvrez ensuite `Kazo.Word.slnx` dans Visual Studio ou Rider et démarrez `Kazo.Word.Os`,
 ou lancez `dotnet run --project src/Kazo.Word.Os`.
 
-## La version de Kazo OS
+### La version de Kazo OS
 
 `external/KazoOs/wasm2/KazoOs/build/Versions.props` est la version de Kazo OS de ce dépôt.
 Pour changer de version, placez le sous-module sur son tag et validez-le :
@@ -109,7 +178,7 @@ git add external/KazoOs
 Ne modifiez jamais le sous-module : on ne modifie pas l'OS depuis un dépôt d'app, et la CI refuse
 un sous-module modifié ou hors de son tag.
 
-## Deux profils de build
+### Deux profils de build
 
 | Profil | Kazo OS vient de | Usage |
 | --- | --- | --- |
@@ -118,7 +187,7 @@ un sous-module modifié ou hors de son tag.
 
 Forcez l'un ou l'autre avec `-p:KazoOsUseSource=true` ou `false`.
 
-## Publier dans le Kazo OS Store
+### Publier dans le Kazo OS Store
 
 1. Remplissez `store/` (icône, descriptions courtes, descriptions, catégorie et étiquettes dans `store.json`).
 2. Changez `Version` dans la classe `[AppManifest]` de l'app et validez-la dans `main`, puis posez le
@@ -143,7 +212,7 @@ Forcez l'un ou l'autre avec `-p:KazoOsUseSource=true` ou `false`.
 Le catalogue ne prend jamais de binaire de votre part : une fois votre pull request relue et
 fusionnée, sa CI compile l'app au commit du tag.
 
-## Publier sur la branche `kazoos-packages`
+### Publier sur la branche `kazoos-packages`
 
 Le même tag `v*` lance aussi **Publish the Kazo OS packages** : il fait le paquet de l'app et le
 pousse sur la branche `kazoos-packages` de ce dépôt, en gardant les versions déjà publiées. Les
@@ -154,6 +223,6 @@ Ces paquets ne sont pas signés : les apps sont signées seulement dans le dép�
 les vérifie par leur SHA-256 et demande un administrateur avant d'installer depuis une source non
 fiable. Pour un paquet signé, installez l'app depuis le Kazo OS Store.
 
-## Plan
+### Plan
 
 Le plan de l'app Kazo Word (WordCraft dans Kazo OS) est dans [`doc/fr/plan.md`](doc/fr/plan.md) ; l'index de la documentation est [`doc/fr/README.md`](doc/fr/README.md).
