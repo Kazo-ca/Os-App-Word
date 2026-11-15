@@ -385,7 +385,7 @@ Un essai qui doit prouver que WordCraft démarre dans une fenêtre Kazo.
   ce commit est celui du sous-module dans l'index git : déplacer le sous-module sans recompiler
   (ou l'inverse) échoue.
 - Workflow `build-wordcraft.yml` : lancé à la main, il compile, pousse le build sur une branche
-  `wordcraft/build-<version>-<commit>`, fait tourner toute la CI sur cette branche (`ci.yml`
+  `wordcraft/build-<version>-<commit>`, fait tourner toute la CI sur cette branche (le `kazoos-ci.yml` partagé
   appelé, puisqu'un push fait avec le jeton du workflow ne lance aucun workflow) puis ouvre la PR.
   Sur une PR qui touche le sous-module, les scripts ou ce fichier, il compile seulement. GitHub ne
   propose le bouton « Run workflow » qu'une fois le fichier sur `main` : d'ici là, le build se
