@@ -199,9 +199,13 @@ Force either one with `-p:KazoOsUseSource=true` or `false`.
    `main` with the manifest's version and starts the two publishing workflows; or push the tag
    yourself: `git tag v1.0.0 && git push --tags`.
 3. The **Publish to the Kazo OS Store** workflow builds the app and makes the catalog folder
-   `apps/<appId>_<version>/`. With a `HACK_STORE_TOKEN` secret (a token allowed to fork and open
-   pull requests), it opens the pull request to `Kazo-ca/Os-AppMarketPlace` from your fork;
-   without it, download the run's artifact and open the pull request yourself.
+   `apps/<appId>_<version>/`, then opens the pull request to `Kazo-ca/Os-AppMarketPlace`: to its
+   `main` branch for a stable version, to its `beta` branch for a version with a suffix
+   (`0.1.2-beta.1`). In Kazo-ca, the Kazo OS automation GitHub App (organisation secrets
+   `KAZO_AUTOMATION_APP_ID` and `KAZO_AUTOMATION_APP_KEY`) opens it from a branch
+   `submit/<appId>_<version>` of the catalog; otherwise a `HACK_STORE_TOKEN` secret (a token
+   allowed to fork and open pull requests) opens it from your fork; with neither, download the
+   run's artifact and open the pull request yourself.
 
 `HACK_STORE_TOKEN` is a GitHub personal access token of yours, not something Kazo OS gives you:
 
@@ -215,6 +219,26 @@ Force either one with `-p:KazoOsUseSource=true` or `false`.
 
 The catalog never takes a binary from you: once your pull request is reviewed and merged, its CI
 compiles the app at the tagged commit.
+
+### Following new Kazo OS versions
+
+The **Kazo OS SDK update** workflow (`sdk-update.yml`) runs every hour, when Kazo OS announces a
+release, or by hand from the Actions tab. When Kazo OS has a newer version, it moves the
+`external/KazoOs` submodule to it, raises the app's version (`.github/scripts/bump-app-version.sh`)
+on a `kazoos-sdk/<version>` branch and runs the whole CI there (C#, JavaScript and end-to-end
+tests):
+
+- a Kazo OS pre-release: the `beta` branch takes it, as version `x.y.(z+1)-beta.<n>`, which goes to
+  the beta channel of the Kazo OS Store;
+- a minor or major stable release: a pull request to `main`, merged, tagged and published;
+- a patch stable release: checked only, nothing is published.
+
+A red CI opens a `TODO` issue and changes nothing. A version with a suffix (`0.1.2-beta.1`) is
+always published from `beta`, one without from `main`. WordCraft does not move with it: its
+version changes through the **Build WordCraft** workflow (above). The other workflows of this
+repository are short: they call the shared workflows of
+[Kazo-ca/Os-AppTemplate](https://github.com/Kazo-ca/Os-AppTemplate) (`@v1`), so they improve
+without a change here.
 
 ### Publishing on the `kazoos-packages` branch
 
