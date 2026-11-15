@@ -44,7 +44,7 @@ public sealed class WordApp : AppDefinition
 
     /// <inheritdoc />
     /// <remarks>The tag that publishes to the Kazo OS Store must be v + this version.</remarks>
-    public override string Version => "0.1.1";
+    public override string Version => "0.1.2-beta.1";
 
     /// <inheritdoc />
     /// <remarks>
