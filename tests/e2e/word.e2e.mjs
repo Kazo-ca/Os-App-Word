@@ -25,7 +25,8 @@ before(async () => {
 
 after(async () => {
     await browser?.close();
-    host?.stop();
+    await host?.stop();
+    host?.assertNoFailures();
 });
 
 /** A fresh page with the OS booted; `renderers` collects the backend each WordCraft chose. */

@@ -138,6 +138,19 @@ npm test               # le proxy et le module côté OS
 npm run test:e2e       # Playwright, dans l'hôte Release (Chromium) : démarrage, ouvrir et enregistrer
 ```
 
+Dans la CI, le même `npm run test:e2e` tourne sur le Kazo OS rogné publié (ADR 0281 §5 de Kazo OS) :
+`kazoos-ci.yml` définit `KAZOOS_E2E_WWWROOT`, `KAZOOS_E2E_PACKAGES` et `KAZOOS_E2E_REPOSITORY`, et
+`tests/e2e/host.mjs` sert alors cet OS par le harnais partagé du sous-module de Kazo OS, installe
+Kazo Word par `sudo kazopkg install` dans chaque profil neuf, et échoue sur une erreur qui nomme un
+membre ou un type manquant. Sans ces variables, ou avec un sous-module plus ancien que 3.5.1 (sans
+harnais), les parcours utilisent l'hôte Release. Les mêmes variables le lancent en local :
+
+```bash
+dotnet build src/Kazo.Word -c Release -t:KazoOsPack
+KAZOOS_E2E_WWWROOT=<os> KAZOOS_E2E_PACKAGES=src/Kazo.Word/bin/kazoos-packages \
+KAZOOS_E2E_REPOSITORY=Kazo-ca/Os-App-Word npm run test:e2e
+```
+
 L'app telle que le Store l'installe, dans un Kazo OS publié (pas en CI : environ cinq minutes) :
 
 ```bash
