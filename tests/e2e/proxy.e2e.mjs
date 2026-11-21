@@ -27,7 +27,8 @@ before(async () => {
 
 after(async () => {
     await browser?.close();
-    host?.stop();
+    await host?.stop();
+    host?.assertNoFailures();
 });
 
 /** WordCraft's settings file of the signed-in user (WebStorageFile). */
