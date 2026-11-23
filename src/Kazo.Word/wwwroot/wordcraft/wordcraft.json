@@ -1,16 +1,16 @@
 {
-  "version": "0.18.1",
+  "version": "0.19.0",
   "source": {
     "kind": "source-build",
     "repository": "https://github.com/Kazo-ca/wordcraft.git",
-    "commit": "079f478bd85df7bcc567e3bafa7d7219096f9c3c",
-    "craftI18n": "1e515422afdda2f317af430c1f9d68a5f83935b4",
+    "commit": "2cde91a869ef098cef5823b1c2e75dc3c4101e98",
+    "craftI18n": "e56d26244bbac099bfd42e23fb12f78a4be418a7",
     "craftFonts": "b076417b5880bd4154bd22f00695b1d28c6bea83",
     "rustc": "rustc 1.100.0 (0ef1bc386 2026-11-09)",
     "trunk": "0.21.14"
   },
-  "glue": "wordcraft-web-ec20780d34282cdf.js",
-  "wasm": "wordcraft-web-ec20780d34282cdf_bg.wasm",
+  "glue": "wordcraft-web-b2e0a73bc5e4c423.js",
+  "wasm": "wordcraft-web-b2e0a73bc5e4c423_bg.wasm",
   "files": [
     { "path": "ATTRIBUTION.md", "size": 16249, "sha256": "3fc09b7189d078901db77a477bc2dc2007d9a139d59057c67cd5d46e8491d435" },
     { "path": "LICENSE-APACHE", "size": 10174, "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594" },
@@ -30,7 +30,7 @@
     { "path": "OFL-noto-sans-thai.txt", "size": 4380, "sha256": "2e98fd23a52d253db8612cd5942c8f2ff4111b21d2367050fdca91d8ccc374a0" },
     { "path": "OFL-shippori-mincho.txt", "size": 4399, "sha256": "41fba056279be5f45ff9a99e44b7b53897b42732f5806d8e666e0ab49ac6bd38" },
     { "path": "snippets/eframe-d31a8450ea12dfc1/inline0.js", "size": 280, "sha256": "22a98f9d0c5a0532d291bdc9a3050439420b3d11143b4568fcfd3c66fff36995" },
-    { "path": "wordcraft-web-ec20780d34282cdf.js", "size": 181839, "sha256": "3f331b08938b9224758c1b797e5497cb28b290843193814b1b3c5d20cbf72ea6" },
-    { "path": "wordcraft-web-ec20780d34282cdf_bg.wasm", "size": 60242518, "sha256": "aa6f58cf2310ef505c710e1bcea1696fdd9055b5575567b8124065a9b97d7d4c" }
+    { "path": "wordcraft-web-b2e0a73bc5e4c423.js", "size": 181846, "sha256": "65e995bd6bf5be555bd524c01e6d609d400ec72392f2d001b89d5cc9695f4e03" },
+    { "path": "wordcraft-web-b2e0a73bc5e4c423_bg.wasm", "size": 69285861, "sha256": "502feac8d940964fa6d888ae904a57627c783a1b6351731b4d23323fd35199c3" }
   ]
 }

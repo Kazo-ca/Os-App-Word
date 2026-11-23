@@ -365,6 +365,11 @@ A trial that must prove WordCraft starts in a Kazo window.
   branch, which the fork had not copied: the fork keeps it with the `kazo/v0.18.1` branch, named
   in `.gitmodules`. A version upgrade does the same: a `kazo/v<version>` branch of the fork from
   the upstream tag, then the submodule on it.
+- **2026-11-23: WordCraft 0.19.0.** Submodule on `2cde91a8` ("Release: WordCraft v0.19.0"), the
+  head of the upstream `release` branch, which has no `v0.19.0` tag yet; fork branch
+  `kazo/v0.19.0`. The web host contract is unchanged (same `craft-web-host` revision), so the
+  proxy needs no change. `tools/vendor-wordcraft.sh` without `--dir` still pins the official
+  0.18.1 zip, the last one published.
 - `tools/build-wordcraft.sh` builds like the upstream release: it reads the revisions of
   `craft-i18n` (`craft-i18n.rev`) and `craft-fonts` (`craft-fonts-ref` of the upstream workflow)
   from the submodule and refuses other checkouts, requires Trunk 0.21.14 and the wasm32 target,

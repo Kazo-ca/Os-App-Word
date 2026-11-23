@@ -13,7 +13,7 @@ It bundles one third-party work, **WordCraft**, which brings its own third-party
 | | |
 | --- | --- |
 | Work | [WordCraft](https://github.com/storytold/wordcraft), a word processor written in Rust, by the ArtCraft team and the WordCraft contributors |
-| Version | 0.18.1, compiled from our fork [`Kazo-ca/wordcraft`](https://github.com/Kazo-ca/wordcraft) (branch `kazo/v0.18.1`, the upstream tag, unmodified) |
+| Version | 0.19.0, compiled from our fork [`Kazo-ca/wordcraft`](https://github.com/Kazo-ca/wordcraft) (branch `kazo/v0.19.0`, the upstream release commit `2cde91a8` "Release: WordCraft v0.19.0", unmodified) |
 | License | MIT or Apache-2.0, at the user's option |
 | Files | `src/Kazo.Word/wwwroot/wordcraft/` (the web build: `.js`, `.wasm`, `snippets/`) |
 | Provenance | `src/Kazo.Word/wwwroot/wordcraft/wordcraft.json`: the fork's commit, the craft-i18n and craft-fonts revisions, the compilers, and the SHA-256 of every file |
