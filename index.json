@@ -2,6 +2,11 @@
   "appId": "ca.kazo.word",
   "versions": [
     {
+      "version": "0.1.5",
+      "path": "0.1.5/ca.kazo.word-0.1.5.kazoapp",
+      "sha256": "b58f518bf608fb4414e9c822f79939f70365fc68907282bcd8a478a86c77b333"
+    },
+    {
       "version": "0.1.4",
       "path": "0.1.4/ca.kazo.word-0.1.4.kazoapp",
       "sha256": "c93968987c6c8dcf15eeb4ecc266b45952eac2492291126b4bf95b224141597d"
